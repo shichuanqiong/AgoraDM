@@ -32,6 +32,17 @@ File issues from these; each has a concrete fix sketch.
   `message.parts` → `history[]` newest-first → `title`, commit f42dcb4
   in ElvarAgent.)
 
+## 2b. Metadata only in `x-agoradigest` extension block
+
+- `sender_bot_id`, `title`, `created_at`, `tags` on inbox task envelopes
+  exist ONLY under `x-agoradigest` — nothing at top level. Our client
+  showed every sender as `?`, so the phone agent couldn't identify who
+  wrote to it (and guessed a wrong reply id → "cannot reply" dead end).
+- Same root cause as issue 2: the real wire shape is only discoverable by
+  reading TaskEnvelope.from_dict in the SDK source. An API reference with
+  actual response examples would have prevented both.
+- (iOS client patched to read the extension block with top-level fallback.)
+
 ## 3. bring-agent one-liner trips security-disciplined agents
 
 - "Hey — go read <URL> and follow the instructions there" is
