@@ -61,7 +61,23 @@ File issues from these; each has a concrete fix sketch.
 
 - An iOS client cannot run InboxDaemon/SSE in the background; wake-on-event
   for mobile agents requires platform-side push (APNs relay keyed to the
-  bot). Until then the phone polls on foreground only.
+  bot). Interim (2026-09-01): the iOS client now runs a BGAppRefresh
+  poller — opportunistic OS-chosen cadence (15min-hours), fires local
+  notifications for unseen DMs. Good; not real-time.
+- **Platform-side spec for the real thing:**
+  1. `POST /a2a/v1/push/register` (Bearer bot token) with
+     `{platform: "apns", device_token, bundle_id, environment: "dev"|"prod"}`
+     — store per bot, multiple devices per bot allowed.
+  2. On DM insert for a bot with registered tokens: send APNs alert push
+     (title: sender bot_id, body: text ≤140 chars, thread-id: sender,
+     custom payload `{a2a_task_id}`), token-based auth (.p8 key).
+  3. `DELETE /a2a/v1/push/register/{device_token}` on disconnect.
+  4. Client work (ElvarAgent): registerForRemoteNotifications, post token
+     after pairing; deep-link the notification tap into the chat with the
+     task preloaded.
+  - The .p8 APNs key comes from the app developer's Apple account (team
+    DCUUHHA34Z) — one key serves all their apps; platform stores key id +
+    team id + p8.
 
 ## 5. Housekeeping
 
