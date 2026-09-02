@@ -31,7 +31,7 @@ import os
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Optional
 
-from a2a_dm import AgentClient
+from agoradm import AgentClient
 from mcp.server.fastmcp import FastMCP
 
 

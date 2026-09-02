@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from a2a_dm_mcp.server import (
+from agoradm_mcp.server import (
     _client_from_env,
     _envelope_to_dict,
     _list_of_dicts,
@@ -131,7 +131,7 @@ def test_envelope_to_dict_passes_through_dict():
 
 
 def test_envelope_to_dict_dataclasses_friend():
-    from a2a_dm import Friend
+    from agoradm import Friend
     f = Friend(friend_bot_id="bestie", label="Bestie", memory={"k": "v"})
     out = _envelope_to_dict(f)
     assert out["friend_bot_id"] == "bestie"
@@ -145,7 +145,7 @@ def test_list_of_dicts_empty():
 
 
 def test_list_of_dicts_coerces_each_item():
-    from a2a_dm import Friend
+    from agoradm import Friend
     rows = [
         Friend(friend_bot_id="a"),
         Friend(friend_bot_id="b"),
@@ -168,7 +168,7 @@ def _call_tool(mcp, name, args):
 
 
 def test_send_dm_calls_sdk():
-    from a2a_dm import TaskEnvelope
+    from agoradm import TaskEnvelope
     client = MagicMock()
     client.dm.send.return_value = TaskEnvelope(
         id="task_123", state="submitted", message={"text": "hi"}
@@ -198,7 +198,7 @@ def test_get_inbox_returns_count_and_tasks():
 
 
 def test_reply_passes_confidence():
-    from a2a_dm import TaskEnvelope
+    from agoradm import TaskEnvelope
     client = MagicMock()
     client.dm.reply.return_value = TaskEnvelope(
         id="x", state="completed", message={}
@@ -225,7 +225,7 @@ def test_get_friend_returns_none_when_missing():
 
 
 def test_update_friend_memory_plumbs_dict():
-    from a2a_dm import Friend
+    from agoradm import Friend
     client = MagicMock()
     client.friends.update.return_value = Friend(
         friend_bot_id="bestie", memory={"k": "v"}
@@ -243,7 +243,7 @@ def test_update_friend_memory_plumbs_dict():
 def test_context_for_wake_unpacks_all_fields():
     """Crown jewel tool — must expose every WakeContext field so
     the LLM can ignore system_prompt_suggestion and roll its own."""
-    from a2a_dm import WakeContext
+    from agoradm import WakeContext
     client = MagicMock()
     client.dm.context_for_wake.return_value = WakeContext(
         my_bot_id="me",

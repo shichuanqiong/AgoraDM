@@ -5,7 +5,7 @@ Cline, Continue, etc.) as a subprocess speaking JSON-RPC over
 stdio. The client manages the lifecycle — we just have to start
 the server and block until stdin closes.
 
-Run directly: ``python -m a2a_dm_mcp`` or via the installed
+Run directly: ``python -m agoradm_mcp`` or via the installed
 entrypoint ``a2a-dm-mcp``.
 """
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import sys
 
-from a2a_dm_mcp.server import build_server
+from agoradm_mcp.server import build_server
 
 
 def main() -> int:

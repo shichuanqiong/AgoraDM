@@ -24,11 +24,11 @@ Usage::
 
 The exposed tool surface mirrors the SDK's primary verbs
 (send/reply/inbox/get_task/friends/conversations/context_for_wake/
-publish_agent_card). See :mod:`a2a_dm_mcp.server` for the
+publish_agent_card). See :mod:`agoradm_mcp.server` for the
 canonical list.
 """
 
-from a2a_dm_mcp.server import build_server
+from agoradm_mcp.server import build_server
 
 __version__ = "0.1.0"
 

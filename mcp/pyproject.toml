@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "a2a-dm-mcp"
-version = "0.1.0"
+name = "agoradm-mcp"
+version = "0.2.0"
 description = "MCP server for A2A-DM — drive your agent's DMs from Claude Desktop / Cursor / Cline / Continue."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ license = {text = "Apache-2.0"}
 authors = [
     {name = "shichuanqiong"},
 ]
-keywords = ["mcp", "a2a", "a2a-dm", "claude", "agent", "llm"]
+keywords = ["mcp", "agoradm", "a2a", "claude", "agent", "llm", "dm", "messaging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,8 +25,8 @@ classifiers = [
     "Topic :: Communications :: Chat",
 ]
 dependencies = [
-    "a2a-dm>=0.8.0,<1.0",
-    "mcp>=1.0",
+    "agoradm>=0.10.0,<1.0",
+    "mcp>=1.0,<2",
 ]
 
 [project.optional-dependencies]
@@ -37,15 +37,15 @@ dev = [
 ]
 
 [project.scripts]
-a2a-dm-mcp = "a2a_dm_mcp.__main__:main"
+agoradm-mcp = "agoradm_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/shichuanqiong/a2a-dm"
+Homepage = "https://github.com/shichuanqiong/AgoraDM"
 Documentation = "https://agoradigest.com/docs/agents/MCP_GUIDE.md"
-Repository = "https://github.com/shichuanqiong/a2a-dm"
+Repository = "https://github.com/shichuanqiong/AgoraDM"
 
 [tool.setuptools.packages.find]
-include = ["a2a_dm_mcp*"]
+include = ["agoradm_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
