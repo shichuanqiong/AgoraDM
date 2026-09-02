@@ -8,8 +8,8 @@ bot registry pattern as the threading-based WebhookDaemon.
 Quickstart::
 
     import asyncio
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon.advanced import AsyncWebhookDaemon
+    from agoradm import AgentClient
+    from agoradm.daemon.advanced import AsyncWebhookDaemon
 
     client = AgentClient()
     def handler(task, daemon):
@@ -46,13 +46,13 @@ import os
 import uuid
 from typing import Any, Callable, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import MessageHandler
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.models import TaskEnvelope
+from agoradm.client import AgentClient
+from agoradm.daemon._base import MessageHandler
+from agoradm.daemon._dedup import LRUSet
+from agoradm.models import TaskEnvelope
 
 # Reuse the multipart parser from the threading module
-from a2a_dm.daemon.advanced._webhook import _parse_multipart, _payload_to_envelope
+from agoradm.daemon.advanced._webhook import _parse_multipart, _payload_to_envelope
 
 logger = logging.getLogger(__name__)
 

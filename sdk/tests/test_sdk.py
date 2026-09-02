@@ -22,7 +22,7 @@ import os
 import pytest
 import responses
 
-from a2a_dm import (
+from agoradm import (
     AgentClient,
     AgoraDigestError,
     AuthError,
@@ -275,7 +275,7 @@ def test_500_maps_to_server_error():
     """The /healthz/rq endpoint exists specifically for diagnosing
     when 500s start happening; the SDK exception is the signal to
     check it."""
-    from a2a_dm import ServerError
+    from agoradm import ServerError
 
     body = {"detail": "internal server error"}
     err = AgoraDigestError.from_response(500, body)
@@ -639,7 +639,7 @@ def test_from_dict_parses_history_message_for_v02_inbox():
     rather than the v0.1 legacy `message: {...}` shape. Before this
     patch, `task.message` was None for every inbox task — the SDK
     parser only checked `data["message"]`."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {
         "id": "abc-123",
@@ -666,7 +666,7 @@ def test_from_dict_parses_history_message_for_v02_inbox():
 def test_from_dict_legacy_message_shape_still_works():
     """v0.1 `/a2a/v1/bots/{id}/message:send` returns `message: {...}`
     directly. The patch must not break this path."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {
         "id": "def-456",
@@ -685,7 +685,7 @@ def test_from_dict_reply_text_from_history_agent_role():
     """v0.2 completed task carries reply under `history[1]` with
     role='agent'. `reply_text` must surface it even when `artifacts`
     is empty."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {
         "id": "ghi-789",
@@ -703,7 +703,7 @@ def test_from_dict_reply_text_from_history_agent_role():
 def test_from_dict_history_no_user_role_falls_back_to_first_with_parts():
     """Defensive — some servers omit role tagging. The parser falls
     back to the first history entry that has a parts array."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {
         "id": "jkl-012",
@@ -720,7 +720,7 @@ def test_from_dict_history_no_user_role_falls_back_to_first_with_parts():
 def test_from_dict_no_message_no_history_returns_none():
     """When neither shape is present, .message stays None — caller
     can then test `if task.message:` defensively."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {"id": "mno-345", "status": {"state": "submitted"}}
     t = TaskEnvelope.from_dict(envelope)
@@ -734,7 +734,7 @@ def test_envelope_exposes_delivered_at_and_replied_at():
     """v0.2.2 — receiver-side timestamps from x-agoradigest. Lets the
     sender check `task.delivered_at` (acked) and `task.replied_at`
     (submitted) — Tyler's "bidirectional confirm" requirement."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     envelope = {
         "id": "abc-123",
@@ -761,7 +761,7 @@ def test_envelope_is_delivered_falls_back_to_state():
     """is_delivered should be True if EITHER delivered_at is set OR
     state has progressed past submitted. Handles the legacy endpoint
     that doesn't surface ack_at."""
-    from a2a_dm.models import TaskEnvelope
+    from agoradm.models import TaskEnvelope
 
     # Legacy shape — no ack_at, but state=working
     envelope_legacy = {"id": "x", "status": {"state": "working"}}
@@ -775,7 +775,7 @@ def test_envelope_is_delivered_falls_back_to_state():
 def test_agent_client_accepts_bot_id_param():
     """v0.2.2 — AgentClient(bot_id=...) needed by WebhookDaemon and
     A2ADaemon. Fixes the AttributeError in laobaigan's field test."""
-    from a2a_dm import AgentClient
+    from agoradm import AgentClient
 
     c = AgentClient(token="bt_test", bot_id="bestiedog")
     assert c.bot_id == "bestiedog"
@@ -916,7 +916,7 @@ def test_dm_send_exhausts_retries_then_raises():
         )
 
     client = AgentClient(token="bt_test")
-    from a2a_dm.exceptions import ServerError
+    from agoradm.exceptions import ServerError
     with pytest.raises(ServerError):
         client.dm.send(
             target="x", text="hi",
@@ -932,8 +932,8 @@ def test_dm_send_exhausts_retries_then_raises():
 def test_dm_send_auto_embeds_sender_card_when_set():
     """v0.3.0 — when client.card is set, dm.send() snapshots it into
     metadata.sender_card so the receiver gets the card inline."""
-    from a2a_dm import AgentCard
-    from a2a_dm.agent_card import AgentEndpoint
+    from agoradm import AgentCard
+    from agoradm.agent_card import AgentEndpoint
     responses.add(
         responses.POST,
         "https://api.agoradigest.com/a2a/v1/messages",
@@ -967,8 +967,8 @@ def test_dm_send_auto_embeds_sender_card_when_set():
 @responses.activate
 def test_dm_send_skips_card_when_embed_card_false():
     """embed_card=False is the explicit opt-out."""
-    from a2a_dm import AgentCard
-    from a2a_dm.agent_card import AgentEndpoint
+    from agoradm import AgentCard
+    from agoradm.agent_card import AgentEndpoint
     responses.add(
         responses.POST,
         "https://api.agoradigest.com/a2a/v1/messages",

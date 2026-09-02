@@ -28,7 +28,7 @@ does NOT reply on your behalf — same rationale as example 6.
 
 **Security.** The example ships without signing. If your webhook is
 internet-facing, sign the body (HMAC-SHA256 with a shared secret) and
-verify on the receiver. See ``a2a_dm.webhooks_api.verify_signature``
+verify on the receiver. See ``agoradm.webhooks_api.verify_signature``
 for the AgoraDigest webhook shape you can reuse.
 
 Run::
@@ -48,8 +48,8 @@ import sys
 
 import requests
 
-from a2a_dm import AgentClient
-from a2a_dm.daemon import SSEDaemon
+from agoradm import AgentClient
+from agoradm.daemon import SSEDaemon
 
 
 def _post_wake(payload: dict) -> None:

@@ -119,7 +119,7 @@ class TaskEnvelope:
     # receivers can fall back to a live discover() call. Stored as a
     # raw dict (the spec-shape Agent Card) rather than an AgentCard
     # object so this module doesn't gain a dependency on
-    # a2a_dm.agent_card. Receivers that want the typed object
+    # agoradm.agent_card. Receivers that want the typed object
     # can construct one with ``AgentCard.from_dict(env.sender_card)``.
     sender_card: Optional[dict[str, Any]] = None
 

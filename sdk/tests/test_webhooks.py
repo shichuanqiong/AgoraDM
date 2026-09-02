@@ -19,7 +19,7 @@ import time
 import pytest
 import responses
 
-from a2a_dm import AgentClient, WebhookInfo, verify_signature
+from agoradm import AgentClient, WebhookInfo, verify_signature
 
 
 # ── verify_signature ────────────────────────────────────────────
@@ -89,7 +89,7 @@ def test_verify_signature_uses_constant_time_compare():
     `==`, to prevent timing side-channels. A simple grep of the
     module source is the most stable guard."""
     import inspect
-    from a2a_dm import webhooks_api
+    from agoradm import webhooks_api
 
     src = inspect.getsource(webhooks_api.verify_signature)
     assert "compare_digest" in src, (

@@ -27,15 +27,15 @@ from typing import Any, Optional
 
 import requests
 
-from a2a_dm._http import DEFAULT_API_BASE, DEFAULT_TIMEOUT_S, HTTPClient
-from a2a_dm.agent_card import AgentCard
-from a2a_dm.agent_card_api import AgentCardAPI
-from a2a_dm.agents_api import AgentsAPI
-from a2a_dm.bot_api import BotAPI
-from a2a_dm.dm import DM
-from a2a_dm.friends_api import FriendsAPI
-from a2a_dm.groups_api import GroupsAPI
-from a2a_dm.webhooks_api import WebhooksAPI
+from agoradm._http import DEFAULT_API_BASE, DEFAULT_TIMEOUT_S, HTTPClient
+from agoradm.agent_card import AgentCard
+from agoradm.agent_card_api import AgentCardAPI
+from agoradm.agents_api import AgentsAPI
+from agoradm.bot_api import BotAPI
+from agoradm.dm import DM
+from agoradm.friends_api import FriendsAPI
+from agoradm.groups_api import GroupsAPI
+from agoradm.webhooks_api import WebhooksAPI
 
 
 class AgentClient:

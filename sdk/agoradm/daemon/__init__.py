@@ -7,13 +7,13 @@ Receivers for A2A DMs in roughly increasing complexity:
   ≥ poll_interval and you don't want SSE.
 * :class:`SSEDaemon` — real SSE listener with InboxDaemon polling
   fallback. Use when you want sub-second latency for new DMs.
-* :class:`a2a_dm.daemon.advanced.A2ADaemon` — three-layer
+* :class:`agoradm.daemon.advanced.A2ADaemon` — three-layer
   production daemon (SSE intercept + inbox safety-net poll + local
   liveness counter). Use for high-reliability deployments.
-* :class:`a2a_dm.daemon.advanced.WebhookDaemon` — HTTP webhook
+* :class:`agoradm.daemon.advanced.WebhookDaemon` — HTTP webhook
   receiver. Use when the platform (or a middleware) pushes to you
   instead of polling.
-* :class:`a2a_dm.daemon.advanced.AsyncWebhookDaemon` — asyncio
+* :class:`agoradm.daemon.advanced.AsyncWebhookDaemon` — asyncio
   rewrite of WebhookDaemon for 10K+ concurrent agents on one loop.
 
 All daemon classes share the :class:`_BaseDaemon` interface:
@@ -22,8 +22,8 @@ decorator / ``stats`` snapshot.
 
 Quickstart::
 
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon import InboxDaemon
+    from agoradm import AgentClient
+    from agoradm.daemon import InboxDaemon
 
     client = AgentClient(token="bt_...")
 
@@ -34,16 +34,16 @@ Quickstart::
         ...  # daemon runs in background
 """
 
-from a2a_dm.daemon._base import (
+from agoradm.daemon._base import (
     DaemonStats,
     MessageHandler,
     ReplyHandler,
     _BaseDaemon,
 )
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.daemon._inbox import InboxDaemon
-from a2a_dm.daemon._sse import SSEDaemon
-from a2a_dm.daemon.triage import (
+from agoradm.daemon._dedup import LRUSet
+from agoradm.daemon._inbox import InboxDaemon
+from agoradm.daemon._sse import SSEDaemon
+from agoradm.daemon.triage import (
     CapExceededHandler,
     TriageDecision,
     TriagePolicy,

@@ -3,16 +3,16 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "a2a-dm"
-version = "0.9.9"
-description = "A2A-DM — DM/IM layer for AI agents. Pythonic A2A 1.0 client: agent-to-agent DMs, daemon framework (inbox/SSE/webhook), capability discovery, per-friend memory + wake context."
+name = "agoradm"
+version = "0.10.0"
+description = "agoradm (formerly a2a-dm) — DM/IM layer for AI agents. Pythonic A2A 1.0 client: agent-to-agent DMs, daemon framework (inbox/SSE/webhook), capability discovery, per-friend memory + wake context."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "shichuanqiong"},
 ]
-keywords = ["a2a", "agent", "ai", "llm", "a2a-dm", "agent-to-agent"]
+keywords = ["agoradm", "a2a", "agent", "ai", "llm", "a2a-dm", "agent-to-agent", "dm", "messaging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -49,13 +49,13 @@ zh = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/shichuanqiong/a2a-dm"
+Homepage = "https://github.com/shichuanqiong/agoradm"
 Documentation = "https://agoradigest.com/docs/agents/A2A_GUIDE.md"
-Repository = "https://github.com/shichuanqiong/a2a-dm"
+Repository = "https://github.com/shichuanqiong/agoradm"
 "A2A Spec" = "https://a2a-protocol.org/latest/"
 
 [tool.setuptools.packages.find]
-include = ["a2a_dm*"]
+include = ["agoradm*", "a2a_dm*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

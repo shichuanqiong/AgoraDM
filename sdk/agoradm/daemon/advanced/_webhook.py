@@ -8,8 +8,8 @@ WebhookDaemon
 
   Quickstart::
 
-      from a2a_dm import AgentClient
-      from a2a_dm.daemon.advanced import WebhookDaemon
+      from agoradm import AgentClient
+      from agoradm.daemon.advanced import WebhookDaemon
 
       client = AgentClient()
       def handler(task, daemon):
@@ -35,7 +35,7 @@ SSEBridge
 
   Quickstart::
 
-      from a2a_dm.daemon.advanced import SSEBridge
+      from agoradm.daemon.advanced import SSEBridge
 
       def handler(task, daemon):
           print(f"SSE task: {task.message.text}")
@@ -60,10 +60,10 @@ import urllib.error
 import urllib.request
 from typing import Any, Callable, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import DaemonStats, MessageHandler, _BaseDaemon
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.models import TaskEnvelope
+from agoradm.client import AgentClient
+from agoradm.daemon._base import DaemonStats, MessageHandler, _BaseDaemon
+from agoradm.daemon._dedup import LRUSet
+from agoradm.models import TaskEnvelope
 
 logger = logging.getLogger(__name__)
 
@@ -815,7 +815,7 @@ def _payload_to_envelope(
         metadata into ``.raw`` for callers that want it.
     """
     # Inline import (lazy — avoids circular deps at module load time)
-    from a2a_dm.models import Message, TaskEnvelope  # noqa: F811
+    from agoradm.models import Message, TaskEnvelope  # noqa: F811
 
     # Unwrap if nested. Three wrapper shapes we've seen in the wild:
     #   1. ``{"task": {...}}``       — webhook POST envelope

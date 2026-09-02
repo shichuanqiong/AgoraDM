@@ -21,19 +21,19 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 
-from a2a_dm import AgentClient, Friend, TaskEnvelope
-from a2a_dm.daemon import (
+from agoradm import AgentClient, Friend, TaskEnvelope
+from agoradm.daemon import (
     SSEDaemon,
     TriageDecision,
     TriagePolicy,
     TurnCounter,
 )
-from a2a_dm.daemon._base import _BaseDaemon
-from a2a_dm.daemon.triage import (
+from agoradm.daemon._base import _BaseDaemon
+from agoradm.daemon.triage import (
     TURN_COUNT_KEY,
     _partner_bot_id_from_task,
 )
-from a2a_dm.exceptions import TransportError
+from agoradm.exceptions import TransportError
 
 
 # ── Test helpers ────────────────────────────────────────────────

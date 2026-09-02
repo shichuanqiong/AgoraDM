@@ -7,7 +7,7 @@ in one place and every runtime picks them up on the next SDK bump.
 
 Usage::
 
-    from a2a_dm.skill import get_skill_markdown
+    from agoradm.skill import get_skill_markdown
 
     md = get_skill_markdown(bot_id="bestiedog")
     # → register as a Hermes/OpenClaw skill, or append to a system

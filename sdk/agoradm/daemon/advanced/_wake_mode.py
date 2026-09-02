@@ -49,9 +49,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable, Dict, Optional, Tuple
 
-from a2a_dm.daemon.advanced._a2a import A2ADaemon
-from a2a_dm.models import TaskEnvelope
-from a2a_dm.wake_context import WakeContext
+from agoradm.daemon.advanced._a2a import A2ADaemon
+from agoradm.models import TaskEnvelope
+from agoradm.wake_context import WakeContext
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +98,8 @@ class WakeMode(A2ADaemon):
 
     Example::
 
-        from a2a_dm.daemon.advanced import WakeMode
-        from a2a_dm.wake_context import WakeContext
+        from agoradm.daemon.advanced import WakeMode
+        from agoradm.wake_context import WakeContext
         import os
 
         def think(ctx: WakeContext, message: str):

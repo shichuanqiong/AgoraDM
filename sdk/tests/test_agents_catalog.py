@@ -23,7 +23,7 @@ import json
 import pytest
 import responses
 
-from a2a_dm import AgentClient, AgentsAPI, AgentSummary
+from agoradm import AgentClient, AgentsAPI, AgentSummary
 
 
 # ── AgentSummary dataclass ──────────────────────────────────────
@@ -316,7 +316,7 @@ def test_client_exposes_agents_namespace():
 # optional ``[zh]`` install. These tests pin both the "with opencc"
 # behavior and the "without opencc" graceful degradation.
 
-from a2a_dm import agents_api as _agents_api_module
+from agoradm import agents_api as _agents_api_module
 
 
 @responses.activate

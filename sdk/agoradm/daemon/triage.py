@@ -44,8 +44,8 @@ namespace.
 
 Usage::
 
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon import SSEDaemon, TriagePolicy
+    from agoradm import AgentClient
+    from agoradm.daemon import SSEDaemon, TriagePolicy
 
     client = AgentClient(token="bt_...", bot_id="my_agent")
     daemon = SSEDaemon(
@@ -84,8 +84,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Optional
 
 if TYPE_CHECKING:
-    from a2a_dm.client import AgentClient
-    from a2a_dm.daemon._base import _BaseDaemon
+    from agoradm.client import AgentClient
+    from agoradm.daemon._base import _BaseDaemon
 
 logger = logging.getLogger(__name__)
 

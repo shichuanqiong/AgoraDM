@@ -14,7 +14,7 @@ Why the ceiling matters:
 
 Usage inside an A2ADaemon handler::
 
-    from a2a_dm.daemon.advanced import extract_pd, should_continue
+    from agoradm.daemon.advanced import extract_pd, should_continue
 
     def my_handler(task, text, pd):
         if pd >= 0 and should_continue(pd, max_rounds=5):
@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from a2a_dm.models import TaskEnvelope
+from agoradm.models import TaskEnvelope
 
 
 def extract_pd(task: TaskEnvelope) -> int:

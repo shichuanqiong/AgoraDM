@@ -8,7 +8,7 @@ Design goals:
     * One handler signature across the whole framework:
       ``handler(task: TaskEnvelope, daemon: _BaseDaemon) -> None``.
       A2ADaemon's "return-string-to-reply" sugar lives in its own
-      adapter — see :mod:`a2a_dm.daemon.advanced._a2a`.
+      adapter — see :mod:`agoradm.daemon.advanced._a2a`.
     * Lifecycle is start/stop in a background thread + context manager.
       No "blocks forever in main thread" footgun.
     * Stats are a single ``DaemonStats`` dataclass usable as the body
@@ -24,8 +24,8 @@ import traceback
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon.triage import (
+from agoradm.client import AgentClient
+from agoradm.daemon.triage import (
     CapExceededHandler,
     TriageDecision,
     TriagePolicy,
@@ -33,8 +33,8 @@ from a2a_dm.daemon.triage import (
     _log_capped,
     _partner_bot_id_from_task,
 )
-from a2a_dm.exceptions import TransportError
-from a2a_dm.models import TaskEnvelope
+from agoradm.exceptions import TransportError
+from agoradm.models import TaskEnvelope
 
 logger = logging.getLogger(__name__)
 

@@ -21,7 +21,7 @@ Inheritance:
 
 Quickstart::
 
-    from a2a_dm.daemon.advanced import A2ADaemon
+    from agoradm.daemon.advanced import A2ADaemon
 
     def reply_handler(task, text, pd):
         # Return a string to reply, or None for a default echo
@@ -48,12 +48,12 @@ import urllib.error
 import urllib.request
 from typing import Any, Callable, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import MessageHandler, _BaseDaemon
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.daemon.advanced._pingpong import extract_pd
-from a2a_dm.exceptions import TransportError
-from a2a_dm.models import TaskEnvelope
+from agoradm.client import AgentClient
+from agoradm.daemon._base import MessageHandler, _BaseDaemon
+from agoradm.daemon._dedup import LRUSet
+from agoradm.daemon.advanced._pingpong import extract_pd
+from agoradm.exceptions import TransportError
+from agoradm.models import TaskEnvelope
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ A2AMessageHandler = Callable[[TaskEnvelope, str, int], Optional[str]]
 
 Return ``None`` to use the default auto-reply, or a string to
 override the reply text. Use the canonical
-:class:`a2a_dm.daemon.MessageHandler` 2-arg form if you want
+:class:`agoradm.daemon.MessageHandler` 2-arg form if you want
 full control of the dispatch path (raw ACK, no auto-reply, etc.)."""
 
 

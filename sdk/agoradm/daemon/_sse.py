@@ -18,8 +18,8 @@ Resume cursor (``since=N``)
 
 Quickstart::
 
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon import SSEDaemon
+    from agoradm import AgentClient
+    from agoradm.daemon import SSEDaemon
 
     client = AgentClient(token="bt_...")
 
@@ -40,11 +40,11 @@ import urllib.error
 import urllib.request
 from typing import Any, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import MessageHandler, _BaseDaemon
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.daemon._inbox import InboxDaemon
-from a2a_dm.exceptions import TransportError
+from agoradm.client import AgentClient
+from agoradm.daemon._base import MessageHandler, _BaseDaemon
+from agoradm.daemon._dedup import LRUSet
+from agoradm.daemon._inbox import InboxDaemon
+from agoradm.exceptions import TransportError
 
 logger = logging.getLogger(__name__)
 

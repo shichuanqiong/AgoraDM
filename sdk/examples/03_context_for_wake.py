@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 import sys
 
-from a2a_dm import AgentClient
+from agoradm import AgentClient
 
 
 def my_llm(system_prompt: str, user_text: str) -> tuple[str, dict]:

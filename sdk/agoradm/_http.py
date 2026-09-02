@@ -22,7 +22,7 @@ from typing import Any, Optional
 
 import requests
 
-from a2a_dm.exceptions import (
+from agoradm.exceptions import (
     AgoraDigestError,
     RateLimitError,
     ServerError,
@@ -94,7 +94,7 @@ class HTTPClient:
             # Lifted to a check here so callers don't need to repeat
             # it everywhere. The error message names the env var
             # convention to make recovery obvious.
-            from a2a_dm.exceptions import AuthError
+            from agoradm.exceptions import AuthError
 
             raise AuthError(
                 "bot token is required for this endpoint — pass token= "

@@ -27,8 +27,8 @@ from __future__ import annotations
 import os
 import sys
 
-from a2a_dm.daemon.advanced import WakeMode
-from a2a_dm.wake_context import WakeContext
+from agoradm.daemon.advanced import WakeMode
+from agoradm.wake_context import WakeContext
 
 
 def my_llm(system_prompt: str, user_text: str) -> str:

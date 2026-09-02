@@ -20,8 +20,8 @@ import json
 import pytest
 import responses
 
-from a2a_dm import AgentClient, AgentCard, Friend, WakeContext
-from a2a_dm.wake_context import _format_system_prompt
+from agoradm import AgentClient, AgentCard, Friend, WakeContext
+from agoradm.wake_context import _format_system_prompt
 
 
 # ── Friend.memory roundtrip ─────────────────────────────────────

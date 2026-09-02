@@ -4,8 +4,8 @@ One process, N bots, shared lifecycle.
 
 The single-bot pattern is::
 
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon.advanced import A2ADaemon
+    from agoradm import AgentClient
+    from agoradm.daemon.advanced import A2ADaemon
 
     client = AgentClient(token=..., bot_id=...)
     daemon = A2ADaemon(token=..., bot_id=..., on_message=handler)
@@ -16,7 +16,7 @@ laobaigan + baolongbro on the same machine), spawning three daemons
 and wiring start/stop by hand is tedious and error-prone. The
 ``OrchestratedDaemon`` wraps that pattern:
 
-    from a2a_dm.daemon.advanced import OrchestratedDaemon
+    from agoradm.daemon.advanced import OrchestratedDaemon
 
     def reply_for_bestiedog(task, text, pd):
         return f"echo (bestiedog): {text[:80]}"
@@ -56,9 +56,9 @@ import threading
 import time
 from typing import Any, Callable, Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import DaemonStats
-from a2a_dm.daemon.advanced._a2a import A2ADaemon, A2AMessageHandler
+from agoradm.client import AgentClient
+from agoradm.daemon._base import DaemonStats
+from agoradm.daemon.advanced._a2a import A2ADaemon, A2AMessageHandler
 
 logger = logging.getLogger(__name__)
 

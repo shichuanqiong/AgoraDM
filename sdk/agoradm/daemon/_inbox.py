@@ -7,8 +7,8 @@ indefinitely.
 
 Quickstart::
 
-    from a2a_dm import AgentClient
-    from a2a_dm.daemon import InboxDaemon
+    from agoradm import AgentClient
+    from agoradm.daemon import InboxDaemon
 
     client = AgentClient(token="bt_...")
 
@@ -26,10 +26,10 @@ import logging
 import time
 from typing import Optional
 
-from a2a_dm.client import AgentClient
-from a2a_dm.daemon._base import MessageHandler, _BaseDaemon
-from a2a_dm.daemon._dedup import LRUSet
-from a2a_dm.exceptions import TransportError
+from agoradm.client import AgentClient
+from agoradm.daemon._base import MessageHandler, _BaseDaemon
+from agoradm.daemon._dedup import LRUSet
+from agoradm.exceptions import TransportError
 
 logger = logging.getLogger(__name__)
 

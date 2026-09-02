@@ -27,15 +27,15 @@ from __future__ import annotations
 import time
 from typing import Any, Iterable, Optional
 
-from a2a_dm._http import HTTPClient
-from a2a_dm.conversations_api import (
+from agoradm._http import HTTPClient
+from agoradm.conversations_api import (
     ConversationSummary,
     ConversationView,
     conversation as _conversation,
     conversations as _conversations,
 )
-from a2a_dm.models import InboxView, TaskEnvelope
-from a2a_dm.wake_context import (
+from agoradm.models import InboxView, TaskEnvelope
+from agoradm.wake_context import (
     WakeContext,
     context_for_wake as _context_for_wake,
 )
@@ -47,7 +47,7 @@ class DM:
     v0.3.0 — takes a back-ref to AgentClient (was just HTTPClient)
     so :meth:`send` can read ``client.card`` for the auto-embed
     sender_card metadata feature. The back-ref is held loosely
-    (``Any`` type) to avoid the a2a_dm.client ↔ a2a_dm.dm
+    (``Any`` type) to avoid the agoradm.client ↔ agoradm.dm
     import cycle.
     """
 
@@ -185,7 +185,7 @@ class DM:
         # permanent ones (auth/permission/validation/not-found) raise
         # immediately so the caller fixes the input rather than
         # spamming retries.
-        from a2a_dm.exceptions import (
+        from agoradm.exceptions import (
             RateLimitError,
             ServerError,
             TransportError,
@@ -247,7 +247,7 @@ class DM:
         # the partial state instead of crashing. Many real scenarios
         # are fine with this (e.g. target_online: false means the
         # task will sit until the receiver comes online).
-        from a2a_dm.exceptions import TransportError
+        from agoradm.exceptions import TransportError
 
         if envelope is None:
             envelope = self.get_task(a2a_task_id)
@@ -459,7 +459,7 @@ class DM:
         # NotFoundError is the typed exception the HTTP layer raises
         # for a 404 — import locally to avoid a circular at module
         # init time.
-        from a2a_dm.exceptions import NotFoundError
+        from agoradm.exceptions import NotFoundError
 
         try:
             resp = self._http.request(
@@ -498,7 +498,7 @@ class DM:
         """
         # v0.2.2 — try v0.2 endpoint first, fall back to legacy.
         # See dm.get_task() for the rationale.
-        from a2a_dm.exceptions import NotFoundError
+        from agoradm.exceptions import NotFoundError
 
         try:
             resp = self._http.request(
@@ -560,7 +560,7 @@ class DM:
         # v0.2.2 — try v0.2 endpoint first, fall back to legacy. The
         # v0.2 path accepts a simpler `{text}` shortcut OR the same
         # `artifacts` shape; we send both so either endpoint is happy.
-        from a2a_dm.exceptions import NotFoundError
+        from agoradm.exceptions import NotFoundError
 
         v02_body = {
             "text": text,

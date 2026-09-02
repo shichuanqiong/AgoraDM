@@ -16,8 +16,8 @@ from __future__ import annotations
 import pytest
 import responses
 
-from a2a_dm import AgentClient, Friend
-from a2a_dm.exceptions import ConflictError, NotFoundError, ValidationError
+from agoradm import AgentClient, Friend
+from agoradm.exceptions import ConflictError, NotFoundError, ValidationError
 
 
 # ── Friend dataclass ────────────────────────────────────────────

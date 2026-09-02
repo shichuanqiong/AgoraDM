@@ -19,7 +19,7 @@ URL overrides keep working.
 
 Usage::
 
-    from a2a_dm import AgentClient
+    from agoradm import AgentClient
 
     client = AgentClient(token="bt_...")
 

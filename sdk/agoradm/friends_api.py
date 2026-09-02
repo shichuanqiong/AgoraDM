@@ -47,7 +47,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
-    from a2a_dm.client import AgentClient
+    from agoradm.client import AgentClient
 
 
 # ── Response shape ──────────────────────────────────────────────
@@ -213,7 +213,7 @@ class FriendsAPI:
         """Fetch one friend by bot_id. Returns ``None`` when not
         in my list (the server's 404 is mapped to ``None`` so the
         common "do I have X friended?" check is a single line)."""
-        from a2a_dm.exceptions import NotFoundError
+        from agoradm.exceptions import NotFoundError
 
         try:
             resp = self._client._http.request(

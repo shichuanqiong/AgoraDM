@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import responses
 
-from a2a_dm import (
+from agoradm import (
     AgentClient,
     ConversationMessage,
     ConversationSummary,

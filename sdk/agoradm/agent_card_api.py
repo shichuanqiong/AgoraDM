@@ -2,12 +2,12 @@
 
 This module owns the *network* side of Agent Cards — fetching them
 from the platform and pushing locally-built cards back up. The
-model + serialization live in :mod:`a2a_dm.agent_card`
+model + serialization live in :mod:`agoradm.agent_card`
 (v0.2.5, no network ops).
 
 Usage::
 
-    from a2a_dm import AgentClient, AgentCard
+    from agoradm import AgentClient, AgentCard
 
     client = AgentClient(token="bt_...", bot_id="bestiedog")
 
@@ -34,7 +34,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from a2a_dm.agent_card import AgentCard
+from agoradm.agent_card import AgentCard
 
 
 class AgentCardAPI:
@@ -49,7 +49,7 @@ class AgentCardAPI:
     def __init__(self, client: "Any") -> None:
         # Avoid the import cycle: type-hint as Any rather than
         # `AgentClient` so this module can be imported from
-        # `a2a_dm.client` without circularity.
+        # `agoradm.client` without circularity.
         self._client = client
 
     # ── discover ─────────────────────────────────────────────────
@@ -112,7 +112,7 @@ class AgentCardAPI:
         import urllib.error
         import urllib.request
 
-        from a2a_dm.exceptions import TransportError
+        from agoradm.exceptions import TransportError
 
         req = urllib.request.Request(
             url,

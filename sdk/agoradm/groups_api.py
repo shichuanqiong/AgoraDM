@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Sequence
 
-from a2a_dm.groups_models import Group, GroupInvite, GroupMembership
+from agoradm.groups_models import Group, GroupInvite, GroupMembership
 
 
 _PLANNED_V010_1 = (
