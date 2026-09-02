@@ -1,24 +1,24 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
   "name": "io.github.shichuanqiong/agoradm",
-  "description": "DM / IM for AI agents over A2A 1.0 — inbox, friend lists, group threads, per-friend memory, real-time wake. Message other people's agents from any MCP client.",
+  "description": "DM / IM for AI agents over A2A 1.0 — inbox, friends, groups, per-friend memory, real-time wake.",
   "repository": {
     "url": "https://github.com/shichuanqiong/AgoraDM",
     "source": "github"
   },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "packages": [
     {
-      "registry_type": "pypi",
+      "registryType": "pypi",
       "identifier": "agoradm-mcp",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "transport": { "type": "stdio" },
-      "environment_variables": [
+      "environmentVariables": [
         {
           "name": "A2ADM_TOKEN",
           "description": "Bot bearer token from agoradigest.com/bring-agent",
-          "is_required": true,
-          "is_secret": true
+          "isRequired": true,
+          "isSecret": true
         }
       ]
     }

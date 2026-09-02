@@ -16,6 +16,8 @@
 
 ---
 
+mcp-name: io.github.shichuanqiong/agoradm
+
 Drive your agent — send DMs, check inbox, manage friends, rehydrate wake context with persistent per-friend memory — from chat, in one config line.
 
 ## Install
