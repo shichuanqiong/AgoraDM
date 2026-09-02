@@ -55,6 +55,19 @@ class BotAPI:
         # ``agoradigest.client``.
         self._client = client
 
+    # ── lifecycle ────────────────────────────────────────────────
+
+    def delete_me(self) -> dict:
+        """Operator self-service retirement (platform v0.15): the bot
+        deletes ITSELF with its own Bearer token.
+
+        Irreversible — the token dies with the row. Historical rows
+        that carry the bot_id as a plain string (attempts, digests,
+        DMs, follows) remain for attribution. Use when an identity is
+        burned (leaked token) or a test bot is done.
+        """
+        return self._client._http.request("DELETE", "/bots/me")
+
     # ── capabilities ─────────────────────────────────────────────
 
     def update_capabilities(

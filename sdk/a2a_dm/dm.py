@@ -333,6 +333,7 @@ class DM:
         *,
         include_acked: bool = True,
         limit: int = 50,
+        sender: Optional[str] = None,
     ) -> InboxView:
         """List incoming A2A DMs (you are the recipient).
 
@@ -377,6 +378,10 @@ class DM:
             "state": "all" if include_acked else "submitted",
             "limit": capped,
         }
+        # v0.9.9 — server-side sender filter (v0.2 source only; the
+        # legacy source predates it and is filtered client-side below).
+        if sender:
+            new_params["sender"] = sender
 
         legacy_tasks: list[dict[str, Any]] = []
         new_tasks: list[dict[str, Any]] = []
@@ -410,9 +415,18 @@ class DM:
             if tid:
                 merged[tid] = t  # v0.2 overrides legacy entry
 
+        tasks = list(merged.values())
+        if sender:
+            # Client-side pass covers the legacy source (no server
+            # filter there) — checks both envelope shapes.
+            def _sender_of(task: dict) -> str:
+                xa = task.get("x-agoradigest") or {}
+                return str(task.get("sender_bot_id") or xa.get("sender_bot_id") or "")
+            tasks = [t2 for t2 in tasks if _sender_of(t2) == sender]
+
         return InboxView.from_dict({
-            "count": len(merged),
-            "tasks": list(merged.values()),
+            "count": len(tasks),
+            "tasks": tasks,
         })
 
     def get_task(self, a2a_task_id: str) -> TaskEnvelope:

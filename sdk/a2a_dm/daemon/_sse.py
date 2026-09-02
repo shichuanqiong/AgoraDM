@@ -89,6 +89,8 @@ class SSEDaemon(_BaseDaemon):
         fallback_interval_s: float = 30.0,
         auto_ack: bool = True,
         dedup_size: int = 10_000,
+        state_file: Optional[str] = None,
+        replay_history: bool = False,
     ) -> None:
         super().__init__(client, handler=handler, auto_ack=auto_ack, name="sse-daemon")
         self.bot_id = bot_id or client.bot_id or ""
@@ -98,7 +100,24 @@ class SSEDaemon(_BaseDaemon):
         self._seen: LRUSet = LRUSet(max_size=dedup_size)
         # SSE resume cursor — set from `id:` lines, sent as `?since=N`
         # on reconnect. Last-seen-id semantics from the v6 reference.
+        #
+        # v0.9.9 hardening (lessons from the laobaigan field debugging,
+        # 2026-09-02): since=0 replays the platform's ENTIRE event log
+        # (~100k+ events at ~100/batch — half an hour of catch-up during
+        # which fresh DMs are invisible). Cold start therefore
+        # bootstraps at the CURRENT seq unless ``replay_history=True``;
+        # pass ``state_file`` to persist the cursor so restarts replay
+        # only the downtime gap (proper Last-Event-ID semantics).
         self._since: int = 0
+        self._state_file = state_file
+        self._replay_history = replay_history
+        if state_file:
+            try:
+                import json as _json
+                with open(state_file) as f:
+                    self._since = int(_json.load(f).get("last_seq", 0))
+            except Exception:
+                pass
         # Fallback InboxDaemon (composition, not inheritance). We
         # override its dispatch so it shares this daemon's dedup +
         # handler.
@@ -135,6 +154,8 @@ class SSEDaemon(_BaseDaemon):
         # may have been constructed with handler=None and had one
         # registered later via @on_message.
         self._fallback._user_handler = self._user_handler
+        if self._since <= 0 and not self._replay_history:
+            self._since = self._bootstrap_since()
         self._fallback.start()
         super().start()
 
@@ -198,8 +219,11 @@ class SSEDaemon(_BaseDaemon):
             "User-Agent": f"a2a-dm-sdk-sse-{self.bot_id or 'anon'}",
         }
         req = urllib.request.Request(url, headers=headers)
-        # 120s read timeout — server sends keepalive every ~30s.
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        # 45s read timeout — the server pings ~1s when idle, so 45s of
+        # silence can only mean a dead link (sleep-resume zombie socket,
+        # NAT reset, server redeploy). The old 120s left half-dead
+        # connections deaf for two minutes.
+        with urllib.request.urlopen(req, timeout=45) as resp:
             logger.info("%s: SSE connected (%s)", self.name, resp.status)
             # Reset backoff on successful connect.
             self._reconnect_delay = 1.0
@@ -215,6 +239,33 @@ class SSEDaemon(_BaseDaemon):
                     block, buf = buf.split("\n\n", 1)
                     self._process_block(block)
                 self.stats.last_heartbeat = time.time()
+
+    def _bootstrap_since(self) -> int:
+        """Current tail seq from ``/events/recent`` — the cold-start
+        cursor when no state file exists. 0 on any failure (falls back
+        to full replay, matching the pre-v0.9.9 behaviour)."""
+        try:
+            http = getattr(self.client, "_http", None)
+            if http is None:
+                return 0
+            r = http.request("GET", "/events/recent", params={"limit": 1})
+            items = r.get("items") or []
+            seq = int(items[0].get("seq") or items[0].get("event_id") or 0) if items else 0
+            if seq:
+                logger.info("%s: cold start at current seq %d", self.name, seq)
+            return seq
+        except Exception:
+            return 0
+
+    def _save_state(self) -> None:
+        if not self._state_file:
+            return
+        try:
+            import json as _json
+            with open(self._state_file, "w") as f:
+                _json.dump({"last_seq": self._since}, f)
+        except OSError:
+            pass
 
     def _build_url(self) -> str:
         base = self.client.api_base.rstrip("/")
@@ -240,6 +291,7 @@ class SSEDaemon(_BaseDaemon):
             if line.startswith("id: "):
                 try:
                     self._since = int(line[4:].strip())
+                    self._save_state()
                 except ValueError:
                     pass
             elif line.startswith("event: "):

@@ -93,6 +93,13 @@ class TaskEnvelope:
     agent_task_id: Optional[str] = None  # internal `task_xxx` id
     answerset_id: Optional[str] = None
     sender_bot_id: Optional[str] = None  # inbound only
+    # v0.9.9 — human-readable sender (platform v0.15 enrichment):
+    # live persona display name -> send-time snapshot -> raw id.
+    # Never None on fresh servers; None against older platforms.
+    sender_display_name: Optional[str] = None
+    sender_avatar_emoji: Optional[str] = None
+    # "dm" | "group" — stop guessing from tags/group_id.
+    message_kind: Optional[str] = None
     target_bot_id: Optional[str] = None  # outbound only
     target_online: Optional[bool] = None  # outbound only
     title: Optional[str] = None
@@ -265,6 +272,10 @@ class TaskEnvelope:
             agent_task_id=xa.get("agent_task_id") or xa.get("task_id"),
             answerset_id=xa.get("answerset_id"),
             sender_bot_id=xa.get("sender_bot_id"),
+            sender_display_name=data.get("sender_display_name")
+            or xa.get("sender_display_name"),
+            sender_avatar_emoji=data.get("sender_avatar_emoji"),
+            message_kind=data.get("message_kind"),
             target_bot_id=xa.get("target_bot_id") or xa.get("recipient_bot_id"),
             target_online=xa.get("target_online"),
             title=xa.get("title"),
