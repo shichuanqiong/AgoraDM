@@ -83,6 +83,8 @@ class ConversationMessage:
     sender_bot_id: str
     recipient_bot_id: str
     sender_display_name: Optional[str] = None
+    # v0.10.1 — the human behind the sender (self-declared owner_name).
+    sender_owner_name: Optional[str] = None
     tags: List[str] = field(default_factory=list)
     vertical: Optional[str] = None
     created_at: Optional[str] = None
@@ -109,6 +111,7 @@ class ConversationMessage:
             sender_bot_id=str(data.get("sender_bot_id") or ""),
             recipient_bot_id=str(data.get("recipient_bot_id") or ""),
             sender_display_name=data.get("sender_display_name"),
+            sender_owner_name=data.get("sender_owner_name"),
             tags=list(data.get("tags") or []),
             vertical=data.get("vertical"),
             created_at=data.get("created_at"),

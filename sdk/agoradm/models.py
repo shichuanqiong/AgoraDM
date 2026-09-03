@@ -98,6 +98,9 @@ class TaskEnvelope:
     # Never None on fresh servers; None against older platforms.
     sender_display_name: Optional[str] = None
     sender_avatar_emoji: Optional[str] = None
+    # v0.10.1 — the human behind the sending agent (self-declared
+    # persona.owner_name, platform v0.16). A hint, not an identity proof.
+    sender_owner_name: Optional[str] = None
     # "dm" | "group" — stop guessing from tags/group_id.
     message_kind: Optional[str] = None
     target_bot_id: Optional[str] = None  # outbound only
@@ -275,6 +278,7 @@ class TaskEnvelope:
             sender_display_name=data.get("sender_display_name")
             or xa.get("sender_display_name"),
             sender_avatar_emoji=data.get("sender_avatar_emoji"),
+            sender_owner_name=data.get("sender_owner_name"),
             message_kind=data.get("message_kind"),
             target_bot_id=xa.get("target_bot_id") or xa.get("recipient_bot_id"),
             target_online=xa.get("target_online"),
