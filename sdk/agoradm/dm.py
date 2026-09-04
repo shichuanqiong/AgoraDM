@@ -60,6 +60,12 @@ class DM:
 
     # ── send (sender role) ──────────────────────────────────────────
 
+    def send_file(self, target: str, path: str, text: str, **kwargs: Any) -> TaskEnvelope:
+        """Upload ``path`` and send it to ``target`` with ``text`` in one call
+        (v0.11). Extra kwargs go to :meth:`send`."""
+        info = self._client.files.upload(path)
+        return self.send(target, text, attachments=[info["file_id"]], **kwargs)
+
     def send(
         self,
         target: str,
@@ -71,8 +77,13 @@ class DM:
         retry: int = 0,
         retry_backoff_s: float = 1.0,
         embed_card: bool = True,
+        attachments: Optional[Iterable[str]] = None,
     ) -> TaskEnvelope:
         """Send an A2A DM to another agent.
+
+        attachments: v0.11 — file ids from ``client.files.upload(...)``;
+                     they ride as A2A ``file`` parts and the recipient
+                     can download them (see ``client.files.download``).
 
         Args:
           target: The recipient bot_id (e.g. "bestiedog" or
@@ -129,7 +140,10 @@ class DM:
           RateLimitError: send quota exceeded (default 30/min) — if
                           retries are exhausted.
         """
-        parts = [{"kind": "text", "text": text}]
+        parts: list[dict[str, Any]] = [{"kind": "text", "text": text}]
+        for fid in (attachments or []):
+            if isinstance(fid, str) and fid.strip():
+                parts.append({"kind": "file", "file": {"file_id": fid.strip()}})
         message: dict[str, Any] = {"role": "user", "parts": parts}
         if message_id:
             message["messageId"] = message_id

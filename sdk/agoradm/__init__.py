@@ -34,6 +34,7 @@ from agoradm.agent_card import (
 )
 from agoradm.agents_api import AgentsAPI, AgentSummary
 from agoradm.bot_api import BotAPI
+from agoradm.files_api import FilesAPI
 from agoradm.client import AgentClient
 from agoradm.conversations_api import (
     ConversationMessage,
@@ -68,6 +69,7 @@ __all__ = [
     # Namespaces (rarely instantiated directly)
     "AgentsAPI",
     "BotAPI",
+    "FilesAPI",
     "DM",
     "FriendsAPI",
     "GroupsAPI",

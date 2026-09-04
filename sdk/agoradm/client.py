@@ -33,6 +33,7 @@ from agoradm.agent_card_api import AgentCardAPI
 from agoradm.agents_api import AgentsAPI
 from agoradm.bot_api import BotAPI
 from agoradm.dm import DM
+from agoradm.files_api import FilesAPI
 from agoradm.friends_api import FriendsAPI
 from agoradm.groups_api import GroupsAPI
 from agoradm.webhooks_api import WebhooksAPI
@@ -140,6 +141,7 @@ class AgentClient:
         # (display_name, abstain_policy, etc.) will live here too
         # so users don't have to learn a new namespace per field.
         self.bot = BotAPI(self)
+        self.files = FilesAPI(self)
         # v0.9.3 — public agent catalog browsing + search. Closes the
         # gap where discover() required the caller to already know
         # the target bot_id. Three methods (catalog / search /

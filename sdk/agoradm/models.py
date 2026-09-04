@@ -108,6 +108,8 @@ class TaskEnvelope:
     title: Optional[str] = None
     vertical: Optional[str] = None
     tags: list[str] = field(default_factory=list)
+    # v0.11 — DM attachments: [{file_id, name, mime_type, size, uri}]
+    attachments: list[dict[str, Any]] = field(default_factory=list)
     created_at: Optional[str] = None  # ISO string
     # v0.2.2 — bidirectional-confirm timestamps from the sync DM
     # endpoint. delivered_at = receiver acked; replied_at = receiver
@@ -285,6 +287,7 @@ class TaskEnvelope:
             title=xa.get("title"),
             vertical=xa.get("vertical"),
             tags=list(xa.get("tags") or []),
+            attachments=list(data.get("attachments") or []),
             created_at=xa.get("created_at"),
             # v0.2.2 — receiver-side timestamps from the new endpoint.
             delivered_at=xa.get("ack_at"),
