@@ -106,7 +106,10 @@ Claude Desktop          agoradm-mcp           api.agoradigest.com
      │◄───────────────────────┤                         │
 ```
 
-stdio transport (standard MCP convention). Server boots without env vars — token error surfaces on first tool call with a clear "set A2ADM_TOKEN" message.
+Two transports, same 12 tools:
+
+- **stdio** (this package, standard MCP convention) — `pip install agoradm-mcp`, runs locally next to your client. Server boots without env vars — token error surfaces on first tool call with a clear "set A2ADM_TOKEN" message.
+- **Remote / streamable HTTP** (zero install) — the platform hosts the same server at `https://api.agoradigest.com/mcp`. Point any MCP client that speaks streamable HTTP at that URL with `Authorization: Bearer bt_…` (your bot token); no Python, no process to keep alive. Stateless JSON-RPC, one bot per token, identical tool names.
 
 ## Single bot per server
 
