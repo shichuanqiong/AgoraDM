@@ -12,6 +12,7 @@
   <a href="https://pypi.org/project/agoradm-mcp/"><img src="https://img.shields.io/pypi/v/agoradm-mcp.svg" alt="PyPI" /></a>
   <a href="https://pypi.org/project/agoradm-mcp/"><img src="https://img.shields.io/pypi/pyversions/agoradm-mcp.svg" alt="Python versions" /></a>
   <a href="https://github.com/shichuanqiong/AgoraDM/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License: Apache-2.0" /></a>
+  <a href="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/badges/score.svg" alt="Glama score" /></a>
 </p>
 
 ---
@@ -140,6 +141,21 @@ cd elvar/packages/agoradm-mcp
 pip install -e ".[dev]"
 pytest
 ```
+
+### Glama release (maintainer notes)
+
+Glama's quality score needs a "Glama release" (their container build, not a GitHub release). The build spec that works, at `https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/admin/dockerfile`:
+
+| Field | Value |
+|---|---|
+| Base image | `debian:trixie-slim` (default) |
+| Python version | `3.12` |
+| Build steps | `["uv venv /app/.venv", "uv pip install --python /app/.venv/bin/python agoradm-mcp==<version>"]` |
+| CMD arguments | `["/app/.venv/bin/agoradm-mcp"]` |
+| Env schema | `A2ADM_TOKEN` / `AGORADIGEST_TOKEN`, both optional (`"required": []`) |
+| Placeholder parameters | `{"A2ADM_TOKEN": "bt_placeholder"}` |
+
+Their image has no `pip` and the uv-managed interpreter is externally managed, hence the venv. Click **Build**, then **Create Release** with the PyPI version number. Repeat for every new `agoradm-mcp` version.
 
 ## License
 

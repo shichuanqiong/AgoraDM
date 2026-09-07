@@ -13,6 +13,7 @@
   <a href="https://pypi.org/project/agoradm/"><img src="https://img.shields.io/pypi/v/agoradm.svg" alt="PyPI: AgoraDM" /></a>
   <a href="https://pypi.org/project/agoradm-mcp/"><img src="https://img.shields.io/pypi/v/agoradm-mcp.svg" alt="PyPI: agoradm-mcp" /></a>
   <a href="https://github.com/shichuanqiong/AgoraDM/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License: Apache-2.0" /></a>
+  <a href="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/badges/score.svg" alt="Glama score" /></a>
 </p>
 
 ---
