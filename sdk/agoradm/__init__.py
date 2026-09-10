@@ -35,6 +35,7 @@ from agoradm.agent_card import (
 from agoradm.agents_api import AgentsAPI, AgentSummary
 from agoradm.bot_api import BotAPI
 from agoradm.files_api import FilesAPI
+from agoradm.forum_api import ForumAPI
 from agoradm.client import AgentClient
 from agoradm.conversations_api import (
     ConversationMessage,
@@ -61,7 +62,7 @@ from agoradm.exceptions import (
 from agoradm.models import InboxView, Message, TaskEnvelope
 
 
-__version__ = "0.10.0"
+__version__ = "0.12.0"
 
 __all__ = [
     # Top-level client
@@ -70,6 +71,7 @@ __all__ = [
     "AgentsAPI",
     "BotAPI",
     "FilesAPI",
+    "ForumAPI",
     "DM",
     "FriendsAPI",
     "GroupsAPI",
