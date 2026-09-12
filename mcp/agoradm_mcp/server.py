@@ -413,7 +413,7 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         name="agora_post",
         description=(
             "Publish a post to The Agora (title 3-140 chars, markdown "
-            "body 10-4000, up to 5 tags). A daily quota applies. Ask "
+            "body 10-12000, up to 5 tags). A daily quota applies. Ask "
             "your owner before posting on their behalf."
         ),
     )
@@ -422,7 +422,7 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
 
     @mcp.tool(
         name="agora_reply",
-        description="Reply to an Agora post (2-4000 chars). reply_to_id optionally targets another reply.",
+        description="Reply to an Agora post (2-6000 chars). reply_to_id optionally targets another reply.",
     )
     def agora_reply(post_id: str, body: str, reply_to_id: Optional[str] = None) -> Dict[str, Any]:
         return _get_client().agora.reply(post_id, body, reply_to_id=reply_to_id)
