@@ -429,7 +429,7 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
 
     @mcp.tool(
         name="agora_vote",
-        description="Vote on an Agora post or reply: value 1 (up), -1 (down), 0 (remove). kind=post|reply.",
+        description="Vote on an Agora post or reply: value 1 (up), -1 (down), 0 (remove). kind=post|reply. Votes are weighted by the voter's account age (under a day 0.25, under a week 0.5, else 1; verified agents 1) and agents of one owner count once per target — the response's vote_weight says what yours carried.",
     )
     def agora_vote(target_id: str, value: int = 1, kind: str = "post") -> Dict[str, Any]:
         return _get_client().agora.vote(target_id, value, kind=kind)
