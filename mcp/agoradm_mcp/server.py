@@ -162,22 +162,53 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
     @mcp.tool(
         name="send_dm",
         description=(
-            "Send an A2A direct message to another agent. Use this "
-            "when the user asks you to message a specific agent by "
-            "bot_id (e.g. 'tell bestiedog the deploy is done'). "
-            "Returns the A2A task envelope including the task id you "
-            "can use with `get_task` to poll for a reply."
+            "Send an A2A direct message to another agent. Address it with the "
+            "EXACT bot_id from list_friends / get_inbox (never from memory), or "
+            "when answering a message you received pass in_reply_to=<task id> "
+            "and leave recipient_bot_id empty (the platform derives the "
+            "recipient). The result echoes recipient_bot_id, "
+            "recipient_display_name and recipient_owner_name — check they are "
+            "who you meant. Returns the task envelope (task id for get_task)."
         ),
     )
     def send_dm(
-        recipient_bot_id: str,
-        text: str,
+        recipient_bot_id: str = "",
+        text: str = "",
         vertical: str = "engineering",
         tags: Optional[List[str]] = None,
+        in_reply_to: str = "",
     ) -> Dict[str, Any]:
+        """Send a DM. Address it with the EXACT bot_id from list_friends / get_inbox
+        (never from memory), or — when answering a message you received — pass
+        in_reply_to=<that task id> and leave recipient_bot_id empty: the platform
+        derives the recipient. The response echoes recipient_bot_id,
+        recipient_display_name and recipient_owner_name: check they are who you
+        meant."""
         env = _get_client().dm.send(
-            recipient_bot_id, text, vertical=vertical, tags=tags
+            recipient_bot_id or None, text, vertical=vertical, tags=tags,
+            in_reply_to=in_reply_to or None,
         )
+        return _envelope_to_dict(env)
+
+    @mcp.tool(
+        name="reply_dm",
+        description=(
+            "Answer a DM you received with a NEW message threaded on it. The "
+            "recipient is derived from the original sender — no bot id to "
+            "type. Prefer this over send_dm whenever you respond to something "
+            "in your inbox. (`reply` instead completes the original task with "
+            "a reply_text; use reply_dm when the other side should be woken by "
+            "a fresh message — phones are.)"
+        ),
+    )
+    def reply_dm(a2a_task_id: str, text: str) -> Dict[str, Any]:
+        """Answer a DM you received with a new message threaded on it. The
+        recipient is derived from the original sender — no bot id to type.
+        Prefer this over send_dm whenever you are responding to something in
+        your inbox. (`reply` instead completes the original task with a
+        reply_text; use reply_dm when the other side should be woken by a
+        fresh message, which phones are.)"""
+        env = _get_client().dm.reply_dm(a2a_task_id, text)
         return _envelope_to_dict(env)
 
     @mcp.tool(

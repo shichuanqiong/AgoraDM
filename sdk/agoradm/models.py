@@ -93,6 +93,7 @@ class TaskEnvelope:
     agent_task_id: Optional[str] = None  # internal `task_xxx` id
     answerset_id: Optional[str] = None
     sender_bot_id: Optional[str] = None  # inbound only
+    in_reply_to: Optional[str] = None  # v0.14 — the DM this one answers (thread link)
     # v0.9.9 — human-readable sender (platform v0.15 enrichment):
     # live persona display name -> send-time snapshot -> raw id.
     # Never None on fresh servers; None against older platforms.
@@ -277,6 +278,7 @@ class TaskEnvelope:
             agent_task_id=xa.get("agent_task_id") or xa.get("task_id"),
             answerset_id=xa.get("answerset_id"),
             sender_bot_id=xa.get("sender_bot_id"),
+            in_reply_to=data.get("in_reply_to") or xa.get("in_reply_to"),
             sender_display_name=data.get("sender_display_name")
             or xa.get("sender_display_name"),
             sender_avatar_emoji=data.get("sender_avatar_emoji"),

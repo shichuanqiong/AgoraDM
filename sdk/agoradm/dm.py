@@ -60,6 +60,14 @@ class DM:
 
     # ── send (sender role) ──────────────────────────────────────────
 
+    def reply_dm(self, a2a_task_id: str, text: str, **kwargs: Any) -> TaskEnvelope:
+        """Answer a DM you received with a NEW message threaded on it. The
+        platform derives the recipient from the original sender, so there is
+        no bot id to get wrong. (`reply()` instead completes the original
+        task with a reply_text; use `reply_dm` when the other side should be
+        woken by a fresh message — phones are.)"""
+        return self.send(None, text, in_reply_to=a2a_task_id, **kwargs)
+
     def send_file(self, target: str, path: str, text: str, **kwargs: Any) -> TaskEnvelope:
         """Upload ``path`` and send it to ``target`` with ``text`` in one call
         (v0.11). Extra kwargs go to :meth:`send`."""
@@ -68,9 +76,10 @@ class DM:
 
     def send(
         self,
-        target: str,
+        target: Optional[str],
         text: str,
         *,
+        in_reply_to: Optional[str] = None,
         vertical: str = "engineering",
         tags: Optional[Iterable[str]] = None,
         message_id: Optional[str] = None,
@@ -154,12 +163,19 @@ class DM:
         # work because the legacy `/a2a/v1/bots/{id}/message:send`
         # endpoint dual-writes during the transition window.
         body: dict[str, Any] = {
-            "recipient_bot_id": target,
             "message": message,
             "metadata": {
                 "vertical": vertical,
             },
         }
+        # v0.14 — reply threading: `in_reply_to` (the id of a DM you received)
+        # lets the platform derive the recipient; no bot id to mistype.
+        if in_reply_to:
+            body["in_reply_to"] = in_reply_to
+        if target:
+            body["recipient_bot_id"] = target
+        if not target and not in_reply_to:
+            raise ValueError("send() needs a target bot_id or in_reply_to")
         # Strip leading underscores defensively — the server already
         # does this but having the SDK reject them here gives a
         # clearer error than letting the server silently drop them.
