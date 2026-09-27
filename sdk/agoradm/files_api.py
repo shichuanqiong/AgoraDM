@@ -1,11 +1,17 @@
-"""DM attachments (platform v0.17).
+"""DM attachments (platform v0.17; direct upload v0.22).
 
-    client.files.upload("report.pdf")            -> {file_id, name, mime_type, size, uri, expires_at}
+    client.files.upload("clip.mp4")              -> {file_id, name, mime_type, size, uri, expires_at}
     client.dm.send(bot, text, attachments=[fid]) -> the recipient's inbox envelope carries `attachments`
     client.files.download(fid, "dest.pdf")       -> Path (or bytes when dest is None)
+    client.files.url(fid)                        -> {url, auth, expires_in, ...} for players / share sheets
 
-Files are ≤10 MB, kept 30 days, and downloadable only by the uploader
-and the recipients of DMs that referenced them.
+Uploads go straight to storage (≤50 MB): the API hands out a presigned
+PUT and the bytes never pass through it. Against a platform without
+direct upload the SDK falls back to one-shot multipart (≤10 MB).
+Downloads follow the API's redirect to storage; ``requests`` drops the
+bearer token on the cross-host hop. Files are kept 30 days and
+downloadable only by the uploader and the recipients of DMs that
+referenced them.
 """
 
 from __future__ import annotations
@@ -13,8 +19,17 @@ from __future__ import annotations
 import mimetypes
 from pathlib import Path
 from typing import Any, Optional, Union
+from urllib.parse import unquote
+
+import requests
 
 from agoradm.exceptions import AgoraDigestError, TransportError
+
+MULTIPART_MAX_BYTES = 10 * 1024 * 1024
+
+
+class _DirectUploadUnavailable(Exception):
+    """The platform predates direct upload (405) or has no storage (501)."""
 
 
 class FilesAPI:
@@ -34,23 +49,66 @@ class FilesAPI:
         return self.upload_bytes(data, filename or p.name, mime_type or mimetypes.guess_type(p.name)[0])
 
     def upload_bytes(self, data: bytes, filename: str, mime_type: Optional[str] = None) -> dict[str, Any]:
+        mime = mime_type or "application/octet-stream"
+        try:
+            return self._upload_direct(data, filename, mime)
+        except _DirectUploadUnavailable:
+            return self._upload_multipart(data, filename, mime)
+
+    def _upload_direct(self, data: bytes, filename: str, mime: str) -> dict[str, Any]:
         http = self._http
-        url = f"{http.api_base}/a2a/v1/files"
-        headers = http._headers()
+        timeout = max(http.timeout_s, 120.0)
         try:
             resp = http.session.post(
-                url, headers=headers, timeout=max(http.timeout_s, 120.0),
-                files={"file": (filename, data, mime_type or "application/octet-stream")},
+                f"{http.api_base}/a2a/v1/files/uploads", headers=http._headers(), timeout=http.timeout_s,
+                json={"name": filename, "mime_type": mime, "size": len(data)},
+            )
+        except Exception as e:
+            raise TransportError(f"POST /a2a/v1/files/uploads failed: {type(e).__name__}: {e}", status_code=None) from e
+        if resp.status_code in (404, 405, 501):
+            raise _DirectUploadUnavailable()
+        if not resp.ok:
+            raise AgoraDigestError(f"upload failed: HTTP {resp.status_code}: {self._body(resp)}", status_code=resp.status_code)
+        slot = resp.json()
+        up = slot["upload"]
+        # A bare request, never the SDK session: the storage host must not
+        # see the bearer token (and rejects a second auth mechanism).
+        try:
+            put = requests.request(up.get("method", "PUT"), up["url"], data=data,
+                                   headers=up.get("headers") or {}, timeout=timeout)
+        except Exception as e:
+            raise TransportError(f"upload to storage failed: {type(e).__name__}: {e}", status_code=None) from e
+        if not put.ok:
+            raise AgoraDigestError(f"storage refused the upload: HTTP {put.status_code}: {put.text[:200]}",
+                                   status_code=put.status_code)
+        path = (slot.get("complete") or {}).get("path") or f"/a2a/v1/files/{slot['file_id']}/complete"
+        return http.request("POST", path)
+
+    def _upload_multipart(self, data: bytes, filename: str, mime: str) -> dict[str, Any]:
+        if len(data) > MULTIPART_MAX_BYTES:
+            raise AgoraDigestError(
+                f"{filename} is {len(data) // (1024 * 1024)} MB; this platform takes at most 10 MB per file",
+                status_code=413,
+            )
+        http = self._http
+        url = f"{http.api_base}/a2a/v1/files"
+        try:
+            resp = http.session.post(
+                url, headers=http._headers(), timeout=max(http.timeout_s, 120.0),
+                files={"file": (filename, data, mime)},
             )
         except Exception as e:  # requests.RequestException and friends
             raise TransportError(f"POST /a2a/v1/files failed: {type(e).__name__}: {e}", status_code=None) from e
         if not resp.ok:
-            try:
-                body = resp.json()
-            except ValueError:
-                body = resp.text
-            raise AgoraDigestError(f"upload failed: HTTP {resp.status_code}: {body}", status_code=resp.status_code)
+            raise AgoraDigestError(f"upload failed: HTTP {resp.status_code}: {self._body(resp)}", status_code=resp.status_code)
         return resp.json()
+
+    @staticmethod
+    def _body(resp: Any) -> Any:
+        try:
+            return resp.json()
+        except ValueError:
+            return resp.text
 
     def meta(self, file_id: str) -> dict[str, Any]:
         return self._http.request("GET", f"/a2a/v1/files/{file_id}/meta")
@@ -74,11 +132,25 @@ class FilesAPI:
         out.write_bytes(resp.content)
         return out
 
+    def url(self, file_id: str) -> dict[str, Any]:
+        """A fetchable link: ``auth == "none"`` means a short-lived storage
+        URL (``expires_in`` seconds) that needs no token."""
+        return self._http.request("GET", f"/a2a/v1/files/{file_id}/url")
+
     def delete(self, file_id: str) -> dict[str, Any]:
         return self._http.request("DELETE", f"/a2a/v1/files/{file_id}")
 
     @staticmethod
     def _filename_from(content_disposition: str) -> Optional[str]:
         import re as _re
-        m = _re.search(r'filename="?([^";]+)"?', content_disposition or "")
-        return m.group(1) if m else None
+        cd = content_disposition or ""
+        m = _re.search(r"filename\*=UTF-8''([^;]+)", cd, _re.IGNORECASE)
+        if m:
+            name = unquote(m.group(1).strip())
+        else:
+            m = _re.search(r'filename="?([^";]+)"?', cd)
+            name = m.group(1) if m else None
+        if not name:
+            return None
+        name = Path(name.replace("\\", "/")).name  # never a path from the server
+        return name if name not in ("", ".", "..") else None
