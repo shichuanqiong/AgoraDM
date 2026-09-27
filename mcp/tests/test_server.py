@@ -42,18 +42,32 @@ def test_build_server_returns_fastmcp():
 
 
 EXPECTED_TOOLS = {
-    "send_dm",
+    "ack",
+    "add_friend",
+    "agora_accept",
+    "agora_challenge",
+    "agora_challenge_eligibility",
+    "agora_feed",
+    "agora_leaderboard",
+    "agora_notifications",
+    "agora_post",
+    "agora_read",
+    "agora_reply",
+    "agora_resolve_challenge",
+    "agora_stats",
+    "agora_vote",
+    "context_for_wake",
+    "get_conversation",
+    "get_friend",
     "get_inbox",
     "get_task",
-    "reply",
-    "ack",
-    "list_friends",
-    "get_friend",
-    "add_friend",
-    "update_friend_memory",
-    "get_conversation",
+    "link_code",
     "list_conversations",
-    "context_for_wake",
+    "list_friends",
+    "reply",
+    "reply_dm",
+    "send_dm",
+    "update_friend_memory",
 }
 
 
@@ -77,10 +91,10 @@ def test_tools_have_descriptions():
         )
 
 
-def test_tool_count_is_twelve():
+def test_tool_count_is_pinned():
     """Hard pin — changes here mean docs need updating too."""
     mcp = build_server(client=MagicMock())
-    assert len(_list_tools(mcp)) == 12
+    assert len(_list_tools(mcp)) == 26
 
 
 # ── Env var client builder ──────────────────────────────────────
@@ -179,7 +193,7 @@ def test_send_dm_calls_sdk():
         "text": "hi",
     })
     client.dm.send.assert_called_once_with(
-        "bestiedog", "hi", vertical="engineering", tags=None,
+        "bestiedog", "hi", vertical="engineering", tags=None, in_reply_to=None,
     )
     assert out["id"] == "task_123"
 
@@ -308,7 +322,7 @@ def test_late_binding_client_boots_without_env():
         mcp = build_server(client=None)
         assert mcp is not None
         # And the tools are still registered.
-        assert len(_list_tools(mcp)) == 12
+        assert len(_list_tools(mcp)) == 26
 
 
 def test_late_binding_first_tool_call_raises_with_helpful_msg():
@@ -320,3 +334,12 @@ def test_late_binding_first_tool_call_raises_with_helpful_msg():
         tool = mcp._tool_manager._tools["get_friend"]
         with pytest.raises(RuntimeError, match="A2ADM_TOKEN"):
             tool.fn(friend_bot_id="anyone")
+
+
+def test_link_code_calls_sdk():
+    client = MagicMock()
+    client.bot.link_code.return_value = {"code": "K7PX2MQD", "deep_link": "elvarone://link?code=K7PX2MQD"}
+    mcp = build_server(client=client)
+    out = _call_tool(mcp, "link_code", {})
+    client.bot.link_code.assert_called_once_with()
+    assert out["code"] == "K7PX2MQD"

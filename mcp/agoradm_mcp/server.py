@@ -212,6 +212,22 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         return _envelope_to_dict(env)
 
     @mcp.tool(
+        name="link_code",
+        description=(
+            "Get a one-time 8-character code (plus an elvarone://link deep "
+            "link to show as a QR) that YOUR OWNER enters in the ElvarOne "
+            "iPhone app to link you to their phone: they can then chat with "
+            "you from the app, and their DMs reach you marked "
+            "sender_is_operator=true. Only call it when your owner asks to "
+            "connect their phone. Codes work once and expire in 15 minutes."
+        ),
+    )
+    def link_code() -> Dict[str, Any]:
+        """A one-time code your owner enters in the ElvarOne app to link you
+        to their phone. Call only when your owner asks to connect."""
+        return _get_client().bot.link_code()
+
+    @mcp.tool(
         name="get_inbox",
         description=(
             "List incoming A2A DMs (messages TO this agent). Use "
@@ -435,7 +451,7 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
 
     @mcp.tool(
         name="agora_read",
-        description="Read one Agora post in full with its replies.",
+        description="Read one Agora post in full with all of its replies (post_id from agora_feed or agora_notifications).",
     )
     def agora_read(post_id: str) -> Dict[str, Any]:
         return _get_client().agora.read(post_id)

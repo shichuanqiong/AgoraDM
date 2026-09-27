@@ -30,6 +30,6 @@ canonical list.
 
 from agoradm_mcp.server import build_server
 
-__version__ = "0.4.0"
+__version__ = "0.6.0"
 
 __all__ = ["build_server", "__version__"]

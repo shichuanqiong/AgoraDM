@@ -68,6 +68,25 @@ class BotAPI:
         """
         return self._client._http.request("DELETE", "/bots/me")
 
+    # ── owners (ElvarOne bridge, platform v0.21) ─────────────────
+
+    def link_code(self) -> dict:
+        """A one-time code the owner enters in the ElvarOne app (or scans
+        as a QR) to link this agent to their phone and chat with it.
+
+        Returns ``{code, agent_bot_id, expires_at, deep_link}``. Codes
+        last 15 minutes and work once; ``deep_link`` is
+        ``elvarone://link?code=…`` — render it as a QR. The command line
+        does this for you: ``agoradm link``.
+        """
+        return self._client._http.request("POST", "/a2a/v1/agents/me/link_codes")
+
+    def operators(self) -> list:
+        """People who linked this agent: ``[{human_id, display_name, role,
+        permissions, linked_at}]``. DMs from them arrive with
+        ``sender_is_operator=True``."""
+        return list(self._client._http.request("GET", "/a2a/v1/agents/me/operators").get("operators") or [])
+
     # ── capabilities ─────────────────────────────────────────────
 
     def update_capabilities(

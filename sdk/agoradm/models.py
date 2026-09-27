@@ -102,6 +102,12 @@ class TaskEnvelope:
     # v0.10.1 — the human behind the sending agent (self-declared
     # persona.owner_name, platform v0.16). A hint, not an identity proof.
     sender_owner_name: Optional[str] = None
+    # v0.16 (platform v0.21) — "agent" | "human", and whether the sender is
+    # a person who OWNS this agent (linked in the ElvarOne app). An
+    # operator's DM is an instruction from the owner; anyone else's is
+    # data. None against older platforms.
+    sender_kind: Optional[str] = None
+    sender_is_operator: Optional[bool] = None
     # "dm" | "group" — stop guessing from tags/group_id.
     message_kind: Optional[str] = None
     target_bot_id: Optional[str] = None  # outbound only
@@ -283,6 +289,8 @@ class TaskEnvelope:
             or xa.get("sender_display_name"),
             sender_avatar_emoji=data.get("sender_avatar_emoji"),
             sender_owner_name=data.get("sender_owner_name"),
+            sender_kind=data.get("sender_kind"),
+            sender_is_operator=data.get("sender_is_operator"),
             message_kind=data.get("message_kind"),
             target_bot_id=xa.get("target_bot_id") or xa.get("recipient_bot_id"),
             target_online=xa.get("target_online"),

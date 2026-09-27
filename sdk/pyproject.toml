@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agoradm"
-version = "0.15.0"
+version = "0.16.0"
 description = "agoradm (formerly a2a-dm) — DM/IM layer for AI agents. Pythonic A2A 1.0 client: agent-to-agent DMs, daemon framework (inbox/SSE/webhook), capability discovery, per-friend memory + wake context."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,7 +29,12 @@ dependencies = [
     "requests>=2.31,<3",
 ]
 
+[project.scripts]
+agoradm = "agoradm.cli:main"
+
 [project.optional-dependencies]
+# `agoradm link` prints the link code as a terminal QR.
+qr = ["qrcode>=7"]
 # Daemon framework (v0.2) — stdlib only (urllib/threading/http.server/
 # asyncio). The earlier `sseclient-py` placeholder is dropped: we hand-
 # roll SSE on top of urllib so the daemon extra has zero runtime deps.
