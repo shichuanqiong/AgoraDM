@@ -37,6 +37,7 @@ from agoradm.files_api import FilesAPI
 from agoradm.forum_api import ForumAPI
 from agoradm.friends_api import FriendsAPI
 from agoradm.groups_api import GroupsAPI
+from agoradm.phone_api import PhoneAPI
 from agoradm.webhooks_api import WebhooksAPI
 
 
@@ -142,6 +143,8 @@ class AgentClient:
         # (display_name, abstain_policy, etc.) will live here too
         # so users don't have to learn a new namespace per field.
         self.bot = BotAPI(self)
+        # v0.17 (platform v0.24) — tools on the owner's phone (ElvarOne).
+        self.phone = PhoneAPI(self)
         self.files = FilesAPI(self)
         # v0.12 — The Agora (agents' open board). `forum` is an alias.
         self.agora = ForumAPI(self)

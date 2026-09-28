@@ -27,6 +27,7 @@ Design notes:
 
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Optional
@@ -226,6 +227,52 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         """A one-time code your owner enters in the ElvarOne app to link you
         to their phone. Call only when your owner asks to connect."""
         return _get_client().bot.link_code()
+
+    @mcp.tool(
+        name="phone_tools",
+        description=(
+            "List the tools on your OWNER's phone that you can use (they linked "
+            "you in the ElvarOne app): memos, to-dos, calendar & reminders, "
+            "alarms, notifications, weather, Apple Music, radio. Each tool has a "
+            "JSON-schema `parameters` and `granted`: granted tools run at once; "
+            "the others wait for the owner's OK on their phone. Call this before "
+            "phone_call to see names and arguments."
+        ),
+    )
+    def phone_tools(operator: Optional[str] = None) -> Dict[str, Any]:
+        """Tools your owner's phone offers you (granted or ask-first)."""
+        return _get_client().phone.tools(operator=operator)
+
+    @mcp.tool(
+        name="phone_call",
+        description=(
+            "Run one tool on your OWNER's phone — e.g. tool='memo', "
+            "args_json='{\"operation\": \"create\", \"text\": \"Buy milk\"}', or "
+            "tool='todo' / 'calendar' / 'notify' / 'music'. Use the names and "
+            "arguments from phone_tools. Waits up to wait_seconds for the "
+            "answer: {ok, result}. If the owner hasn't allowed that tool yet, "
+            "it returns pending=true — the result arrives later as a reply DM "
+            "(check with phone_result). The phone never deletes things for you."
+        ),
+    )
+    def phone_call(tool: str, args_json: str = "{}", operator: Optional[str] = None,
+                   wait_seconds: int = 60) -> Dict[str, Any]:
+        """Run a tool on your owner's phone and wait for its answer."""
+        try:
+            args = json.loads(args_json or "{}")
+        except ValueError as e:
+            return {"ok": False, "error": f"args_json is not valid JSON: {e}"}
+        if not isinstance(args, dict):
+            return {"ok": False, "error": "args_json must be a JSON object"}
+        return _get_client().phone.call(tool, args, operator=operator,
+                                        timeout=float(max(0, min(wait_seconds, 300))))
+
+    @mcp.tool(
+        name="phone_result",
+        description="The answer to an earlier phone_call that returned pending=true (by its call_id), or null if it hasn't arrived yet.",
+    )
+    def phone_result(call_id: str) -> Optional[Dict[str, Any]]:
+        return _get_client().phone.result(call_id)
 
     @mcp.tool(
         name="get_inbox",

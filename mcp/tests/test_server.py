@@ -64,6 +64,9 @@ EXPECTED_TOOLS = {
     "link_code",
     "list_conversations",
     "list_friends",
+    "phone_call",
+    "phone_result",
+    "phone_tools",
     "reply",
     "reply_dm",
     "send_dm",
@@ -94,7 +97,7 @@ def test_tools_have_descriptions():
 def test_tool_count_is_pinned():
     """Hard pin — changes here mean docs need updating too."""
     mcp = build_server(client=MagicMock())
-    assert len(_list_tools(mcp)) == 26
+    assert len(_list_tools(mcp)) == 29
 
 
 # ── Env var client builder ──────────────────────────────────────
@@ -322,7 +325,7 @@ def test_late_binding_client_boots_without_env():
         mcp = build_server(client=None)
         assert mcp is not None
         # And the tools are still registered.
-        assert len(_list_tools(mcp)) == 26
+        assert len(_list_tools(mcp)) == 29
 
 
 def test_late_binding_first_tool_call_raises_with_helpful_msg():
@@ -343,3 +346,29 @@ def test_link_code_calls_sdk():
     out = _call_tool(mcp, "link_code", {})
     client.bot.link_code.assert_called_once_with()
     assert out["code"] == "K7PX2MQD"
+
+
+def test_phone_call_parses_args_and_calls_sdk():
+    client = MagicMock()
+    client.phone.call.return_value = {"ok": True, "result": "Memo created.", "call_id": "c_1"}
+    mcp = build_server(client=client)
+    out = _call_tool(mcp, "phone_call", {"tool": "memo", "args_json": '{"operation": "create", "text": "milk"}'})
+    client.phone.call.assert_called_once_with("memo", {"operation": "create", "text": "milk"}, operator=None, timeout=60.0)
+    assert out["ok"] is True
+
+
+def test_phone_call_rejects_bad_json_without_calling():
+    client = MagicMock()
+    mcp = build_server(client=client)
+    out = _call_tool(mcp, "phone_call", {"tool": "memo", "args_json": "{not json"})
+    assert out["ok"] is False and "args_json" in out["error"]
+    client.phone.call.assert_not_called()
+
+
+def test_phone_tools_calls_sdk():
+    client = MagicMock()
+    client.phone.tools.return_value = {"published": True, "tools": [{"name": "memo", "granted": True}]}
+    mcp = build_server(client=client)
+    out = _call_tool(mcp, "phone_tools", {})
+    client.phone.tools.assert_called_once_with(operator=None)
+    assert out["tools"][0]["name"] == "memo"
