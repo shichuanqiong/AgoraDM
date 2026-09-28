@@ -1,8 +1,9 @@
 """``client.phone`` — run tools on your owner's phone (platform v0.24).
 
 An agent linked in the ElvarOne app (``agoradm link``) can call the
-tools the owner's phone offers — memos, to-dos, calendar & reminders,
-alarms, notifications, weather, Apple Music, radio::
+tools the owner's phone offers — nearly everything the phone's own agent
+has (memos, to-dos, calendar, Gmail incl. sending, Drive, contacts, spending,
+location snapshot, MCP servers, apps & rides, calls & messages…)::
 
     client = AgentClient(token="bt_...")
 
@@ -16,8 +17,8 @@ Granted tools run at once. The rest wait for the owner's OK on a card in
 the app. When that doesn't happen within ``timeout``, ``call`` returns
 ``{"ok": None, "pending": True, ...}``. The answer arrives later as a
 reply DM carrying ``data=[{"elvarone": "tool_result", ...}]``, and
-``result(call_id)`` looks for it. The phone never runs a tool's
-destructive operations (deleting) for a linked agent.
+``result(call_id)`` looks for it. Deleting stays in the app; calls, FaceTime
+and messages are confirmed by the owner every time.
 """
 
 from __future__ import annotations
