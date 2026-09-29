@@ -66,7 +66,11 @@ class PhoneAPI:
             "recipient_bot_id": op["human_id"],
             "message": {"role": "user", "parts": [
                 {"kind": "text", "text": text or f"🛠 {label}"},
-                {"kind": "data", "data": {"elvarone": "tool_call", "call_id": call_id, "tool": tool, "args": args}},
+                # wait_s tells the platform how long this call waits for the
+                # answer: one that arrives in time is delivered quietly
+                # (no second wake-up); a later one wakes the agent.
+                {"kind": "data", "data": {"elvarone": "tool_call", "call_id": call_id, "tool": tool, "args": args,
+                                          "wait_s": int(max(0, min(timeout, 600)))}},
             ]},
         })
         task_id = env.get("id")

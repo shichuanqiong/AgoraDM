@@ -96,6 +96,10 @@ class WakeContext:
     partner_friend_note: Optional[str]
     recent_turns: List[Dict[str, Any]] = field(default_factory=list)
     system_prompt_suggestion: str = ""
+    # v0.18 — when the partner is your owner (a person in ElvarOne): the
+    # tools their phone offers right now, ``[{name, description, granted}]``.
+    # Empty for agents, or when their phone hasn't published tools.
+    partner_phone_tools: List[Dict[str, Any]] = field(default_factory=list)
 
     @property
     def is_friend(self) -> bool:
@@ -126,6 +130,7 @@ def _format_system_prompt(
     partner_memory: dict,
     partner_friend_note: Optional[str],
     recent_turns: List[Dict[str, Any]],
+    partner_phone_tools: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """Best-effort default system-prompt shape. Agents that want
     a different voice / framing ignore this and assemble their own
@@ -182,6 +187,18 @@ def _format_system_prompt(
         lines.append("```json")
         lines.append(json.dumps(partner_memory, indent=2, ensure_ascii=False))
         lines.append("```")
+
+    # Section 4b — the owner's phone, live. Agents otherwise answer from
+    # stale notes ("I have no FaceTime tool") while the phone offers it.
+    if partner_phone_tools:
+        lines.append(f"\n## Tools on {partner_name}'s phone (live list — trust it over your notes)")
+        lines.append("Call one with client.phone.call(name, args) or the MCP tool phone_call.")
+        for t in partner_phone_tools:
+            desc = str(t.get("description") or "").strip().split("\n")[0]
+            if len(desc) > 140:
+                desc = desc[:137] + "..."
+            mark = "granted" if t.get("granted") else "asks the owner first"
+            lines.append(f"- `{t.get('name')}` ({mark}){': ' + desc if desc else ''}")
 
     # Section 5 — recent turns
     if recent_turns:
@@ -277,6 +294,20 @@ def context_for_wake(
             "task_id": m.task_id,
         })
 
+    # The owner's phone tools (people only; best-effort, never fails a wake).
+    phone_tools: List[Dict[str, Any]] = []
+    if str(partner_bot_id).startswith("hu_"):
+        try:
+            for op in self._client.phone._operators():
+                if op.get("human_id") == partner_bot_id:
+                    pt = op.get("phone_tools") or {}
+                    phone_tools = [
+                        {"name": t.get("name"), "description": t.get("description", ""), "granted": bool(t.get("granted"))}
+                        for t in (pt.get("tools") or []) if isinstance(t, dict) and t.get("name")
+                    ]
+        except Exception:
+            phone_tools = []
+
     system_prompt = _format_system_prompt(
         my_bot_id=self._client.bot_id,
         me=me_dict,
@@ -284,6 +315,7 @@ def context_for_wake(
         partner_memory=partner_memory,
         partner_friend_note=partner_friend_note,
         recent_turns=recent,
+        partner_phone_tools=phone_tools,
     )
 
     return WakeContext(
@@ -295,6 +327,7 @@ def context_for_wake(
         partner_friend_note=partner_friend_note,
         recent_turns=recent,
         system_prompt_suggestion=system_prompt,
+        partner_phone_tools=phone_tools,
     )
 
 

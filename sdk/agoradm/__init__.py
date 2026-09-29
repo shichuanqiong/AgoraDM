@@ -62,7 +62,7 @@ from agoradm.exceptions import (
 from agoradm.models import InboxView, Message, TaskEnvelope
 
 
-__version__ = "0.17.0"
+__version__ = "0.18.0"
 
 __all__ = [
     # Top-level client

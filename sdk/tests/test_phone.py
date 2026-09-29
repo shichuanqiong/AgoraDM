@@ -49,6 +49,8 @@ def test_call_sends_a_tool_call_and_returns_the_result():
     assert body["message"]["parts"][0]["text"] == "🛠 memo · create"
     data = body["message"]["parts"][1]["data"]
     assert data["elvarone"] == "tool_call" and data["tool"] == "memo" and data["args"]["text"] == "milk"
+    # How long it waits, so the platform delivers an in-time answer quietly.
+    assert data["wait_s"] == 5
     assert "sender=hu_1" in responses.calls[2].request.url
 
 

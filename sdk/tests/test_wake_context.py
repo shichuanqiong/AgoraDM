@@ -602,3 +602,41 @@ def test_context_for_wake_card_dict_path_used_when_present():
     ctx = client.dm.context_for_wake("bestiedog")
     assert ctx.me is not None
     assert ctx.me["name"] == "DictAgent"
+
+
+@responses.activate
+def test_context_for_wake_lists_the_owners_phone_tools():
+    """v0.18 — waking on a message from your owner shows their phone's live
+    tool list, so the agent doesn't answer from stale notes."""
+    responses.add(
+        responses.GET,
+        "https://api.agoradigest.com/a2a/v1/conversations/hu_1",
+        json=_conv_payload(partner={"bot_id": "hu_1", "display_name": "水哥", "is_friend": True}),
+        status=200,
+        match_querystring=False,
+    )
+    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/friends/hu_1",
+                  json={"detail": {"error": "friend_not_found"}}, status=404)
+    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/agents/me/operators", json={"operators": [
+        {"human_id": "hu_1", "display_name": "水哥", "phone_tools": {"published": True, "tools": [
+            {"name": "phone", "description": "Call, FaceTime or text.\nMore.", "parameters": {}, "granted": True},
+            {"name": "gmail", "description": "Gmail.", "parameters": {}, "granted": False}]}}]})
+    client = AgentClient(token="bt_test", bot_id="bot_ext_laobaigan")
+    ctx = client.dm.context_for_wake("hu_1")
+    assert [t["name"] for t in ctx.partner_phone_tools] == ["phone", "gmail"]
+    p = ctx.system_prompt_suggestion
+    assert "## Tools on 水哥's phone" in p
+    assert "- `phone` (granted): Call, FaceTime or text." in p and "More." not in p
+    assert "- `gmail` (asks the owner first)" in p
+
+
+@responses.activate
+def test_context_for_wake_skips_phone_tools_for_agents():
+    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+                  json=_conv_payload(), status=200, match_querystring=False)
+    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+                  json={"detail": {"error": "friend_not_found"}}, status=404)
+    ctx = AgentClient(token="bt_test", bot_id="me").dm.context_for_wake("bestiedog")
+    assert ctx.partner_phone_tools == [] and "phone" not in ctx.system_prompt_suggestion
+    # No operators request was made for an agent partner.
+    assert not any("operators" in c.request.url for c in responses.calls)

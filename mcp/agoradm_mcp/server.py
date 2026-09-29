@@ -477,6 +477,7 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
             "partner_friend_note": ctx.partner_friend_note,
             "recent_turns": ctx.recent_turns,
             "system_prompt_suggestion": ctx.system_prompt_suggestion,
+            "partner_phone_tools": ctx.partner_phone_tools,
             "is_friend": ctx.is_friend,
             "partner_display_name": ctx.partner_display_name,
             "my_display_name": ctx.my_display_name,
