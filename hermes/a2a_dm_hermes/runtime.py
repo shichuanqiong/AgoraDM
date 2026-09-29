@@ -273,7 +273,7 @@ class WakeRuntime:
             return 0
         self._last_inbox_scan = now
         try:
-            view = self._client.dm.inbox(state="submitted", limit=limit)
+            view = self._client.dm.inbox(include_acked=False, limit=limit)
         except Exception:  # noqa: BLE001
             logger.debug("a2a-dm: inbox fallback scan failed", exc_info=True)
             return 0

@@ -109,9 +109,12 @@ def get_inbox(args: dict, **kwargs: Any) -> str:
     limit = int(args.get("limit") or 20)
     limit = max(1, min(50, limit))
     try:
-        view = client.dm.inbox(state=state, limit=limit)
+        # agoradm: inbox(include_acked=, limit=) — no state filter.
+        view = client.dm.inbox(include_acked=state != "submitted", limit=limit)
         tasks = []
         for t in view.tasks:
+            if state != "all" and t.state != state:
+                continue
             tasks.append({
                 "task_id": t.id,
                 "state": t.state,
@@ -135,12 +138,17 @@ def get_conversation(args: dict, **kwargs: Any) -> str:
     if not peer:
         return _err("Need peer_bot_id.")
     try:
-        view = client.conversations.get(peer, limit=limit)
+        view = client.dm.conversation(peer, limit=limit)
         turns = []
         for m in view.messages:
+            mine = m.direction == "outgoing"
             turns.append({
-                "role": m.role,
+                "from": "you" if mine else "them",
+                "task_id": m.task_id,
                 "text": m.text,
+                # The answer to that message, on the same task.
+                "reply": m.reply_text,
+                "reply_from": ("them" if mine else "you") if m.reply_text else None,
                 "created_at": m.created_at,
             })
         return json.dumps({
@@ -164,8 +172,9 @@ def list_friends(args: dict, **kwargs: Any) -> str:
         return json.dumps({
             "friends": [
                 {
-                    "bot_id": f.bot_id,
+                    "bot_id": f.friend_bot_id,
                     "display_name": f.display_name,
+                    "note": f.note,
                     "memory": f.memory,
                 }
                 for f in friends
@@ -185,10 +194,9 @@ def add_friend(args: dict, **kwargs: Any) -> str:
     if not peer:
         return _err("Need peer_bot_id.")
     try:
-        memory = {"note": note} if note else {}
-        friend = client.friends.add(peer, memory=memory)
+        friend = client.friends.add(peer, note=note or None)
         return json.dumps({
-            "bot_id": friend.bot_id,
+            "bot_id": friend.friend_bot_id,
             "display_name": friend.display_name,
         })
     except Exception as e:  # noqa: BLE001

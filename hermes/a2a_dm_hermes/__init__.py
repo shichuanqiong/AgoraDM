@@ -34,7 +34,7 @@ from a2a_dm_hermes import schemas, skillinstall, tools
 from a2a_dm_hermes.autowake import enabled as _autowake_enabled
 from a2a_dm_hermes.runtime import WakeRuntime, format_wake_context
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 logger = logging.getLogger(__name__)
 

@@ -439,3 +439,39 @@ def test_started_turn_marks_the_dm_read(monkeypatch):
     rt._autowake.wake.return_value = False
     rt._wake_or_notify({"task_id": "t3", "group_id": None, "sender_bot_id": "hu_1"})
     rt._client.dm.ack.assert_not_called()
+
+
+def test_tools_use_the_current_agoradm_api():
+    """0.1.4 — inbox(include_acked=), dm.conversation(), friends.add(note=)
+    and Friend.friend_bot_id; the old calls errored, and the agent fell back
+    to writing its own HTTP code (≈20 s per turn)."""
+    import json as _json
+    from a2a_dm_hermes import tools as T
+
+    c = MagicMock()
+    t_new = MagicMock(state="submitted", id="t1", sender_bot_id="hu_1", group_id=None, is_group_message=False, created_at="x")
+    t_new.message.text = "hi"
+    t_old = MagicMock(state="working", id="t0", sender_bot_id="hu_1", group_id=None, is_group_message=False, created_at="x")
+    t_old.message.text = "old"
+    c.dm.inbox.return_value = MagicMock(tasks=[t_new, t_old])
+    m = MagicMock(direction="incoming", task_id="t1", text="hi", reply_text="hello", created_at="x")
+    c.dm.conversation.return_value = MagicMock(messages=[m])
+    f = MagicMock(friend_bot_id="bot_b", display_name="B", note="n", memory={})
+    c.friends.add.return_value = f
+    c.friends.list.return_value = [f]
+    T._client = c
+    try:
+        out = _json.loads(T.get_inbox({}))
+        c.dm.inbox.assert_called_with(include_acked=False, limit=20)
+        assert [x["task_id"] for x in out["tasks"]] == ["t1"]
+        out = _json.loads(T.get_inbox({"state": "all"}))
+        assert out["count"] == 2
+        out = _json.loads(T.get_conversation({"peer_bot_id": "hu_1"}))
+        c.dm.conversation.assert_called_with("hu_1", limit=20)
+        assert out["turns"][0] == {"from": "them", "task_id": "t1", "text": "hi", "reply": "hello",
+                                   "reply_from": "you", "created_at": "x"}
+        assert _json.loads(T.add_friend({"peer_bot_id": "bot_b", "note": "n"}))["bot_id"] == "bot_b"
+        c.friends.add.assert_called_with("bot_b", note="n")
+        assert _json.loads(T.list_friends({}))["friends"][0]["bot_id"] == "bot_b"
+    finally:
+        T._client = None
