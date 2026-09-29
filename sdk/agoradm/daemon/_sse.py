@@ -35,6 +35,7 @@ from __future__ import annotations
 import json
 import logging
 import socket
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -42,6 +43,8 @@ from typing import Any, Optional
 
 from agoradm.client import AgentClient
 from agoradm.daemon._base import MessageHandler, _BaseDaemon
+
+_SWEEP_THROTTLE_S = 1.0
 from agoradm.daemon._dedup import LRUSet
 from agoradm.daemon._inbox import InboxDaemon
 from agoradm.exceptions import TransportError
@@ -109,6 +112,11 @@ class SSEDaemon(_BaseDaemon):
         # pass ``state_file`` to persist the cursor so restarts replay
         # only the downtime gap (proper Last-Event-ID semantics).
         self._since: int = 0
+        # Inbox sweeps: one at a time; a wake signal inside the
+        # throttle window schedules one for when it ends instead of
+        # being lost.
+        self._sweep_lock = threading.Lock()
+        self._sweep_timer: Optional[threading.Timer] = None
         self._state_file = state_file
         self._replay_history = replay_history
         if state_file:
@@ -133,8 +141,9 @@ class SSEDaemon(_BaseDaemon):
         self._fallback._seen = self._seen
         # Reconnect backoff: starts at 1s, caps at 30s
         self._reconnect_delay: float = 1.0
-        # v0.2.4 — throttle SSE-triggered inbox fetches to 1/3s under
-        # event bursts (collapses round-trip multi-DM bursts).
+        # v0.2.4 — throttle SSE-triggered inbox fetches under event
+        # bursts (collapses round-trip multi-DM bursts). 0.18.1: 1 s —
+        # the platform stream itself ticks once a second.
         self._last_inbox_fetch: float = 0.0
 
     # Note on stats: ``self.stats`` reflects the SSE thread (inherited
@@ -230,7 +239,11 @@ class SSEDaemon(_BaseDaemon):
             self.stats.last_heartbeat = time.time()
             buf = ""
             while not self._stop_event.is_set():
-                chunk = resp.read(4096)
+                # read1, not read: on a chunked stream read(4096) blocks
+                # until 4096 bytes arrive — with 8-byte ": ping" heartbeats
+                # that held each DM event for minutes, so agents only
+                # heard of new messages from the 30 s fallback poll.
+                chunk = resp.read1(4096)
                 if not chunk:
                     logger.warning("%s: SSE stream ended", self.name)
                     return
@@ -335,37 +348,52 @@ class SSEDaemon(_BaseDaemon):
         # source-of-truth for A2A UUIDs, and it returns ALL pending
         # tasks at once — usually what the handler wants anyway.
         #
-        # Throttle: at most one inbox fetch per 3s under a burst of
+        # Throttle: at most one inbox fetch per second under a burst of
         # events (e.g. a multi-DM round). Repeated wake signals
-        # collapse to a single inbox sweep that picks up everything.
-        now = time.time()
-        if hasattr(self, "_last_inbox_fetch") and now - self._last_inbox_fetch < 3.0:
+        # collapse to a single sweep — but on the trailing edge: a signal
+        # inside the window schedules a sweep for when it ends. (Until
+        # 0.18.1 it was dropped, and the DM waited for the fallback poll.)
+        wait = _SWEEP_THROTTLE_S - (time.time() - self._last_inbox_fetch)
+        if wait > 0:
+            self._schedule_sweep(wait)
             return
-        self._last_inbox_fetch = now
+        self._sweep_inbox()
 
-        try:
-            inbox = self.client.dm.inbox(include_acked=False)
-        except TransportError:
-            logger.warning(
-                "%s: SSE-triggered inbox fetch transport error; fallback "
-                "poll thread will catch any missed tasks",
-                self.name,
-            )
-            self.stats.errors += 1
-            return
-        except Exception:
-            logger.exception("%s: SSE-triggered inbox fetch failed", self.name)
-            self.stats.errors += 1
-            return
+    def _schedule_sweep(self, delay: float) -> None:
+        with self._sweep_lock:
+            if self._sweep_timer is not None and self._sweep_timer.is_alive():
+                return
+            t = threading.Timer(delay, self._sweep_inbox)
+            t.daemon = True
+            self._sweep_timer = t
+            t.start()
 
-        for envelope in inbox.pending:
-            if envelope.id in self._seen:
-                continue
-            if envelope.state != "submitted":
-                self._seen.add(envelope.id)
-                continue
-            if self._dispatch(envelope):
-                self._seen.add(envelope.id)
+    def _sweep_inbox(self) -> None:
+        with self._sweep_lock:
+            self._last_inbox_fetch = time.time()
+            try:
+                inbox = self.client.dm.inbox(include_acked=False)
+            except TransportError:
+                logger.warning(
+                    "%s: SSE-triggered inbox fetch transport error; fallback "
+                    "poll thread will catch any missed tasks",
+                    self.name,
+                )
+                self.stats.errors += 1
+                return
+            except Exception:
+                logger.exception("%s: SSE-triggered inbox fetch failed", self.name)
+                self.stats.errors += 1
+                return
+
+            for envelope in inbox.pending:
+                if envelope.id in self._seen:
+                    continue
+                if envelope.state != "submitted":
+                    self._seen.add(envelope.id)
+                    continue
+                if self._dispatch(envelope):
+                    self._seen.add(envelope.id)
 
     def _handle_reply_event(self, data_payload: dict[str, Any]) -> None:
         """Phase 7.1 — fan out an `a2a.message.replied` SSE event

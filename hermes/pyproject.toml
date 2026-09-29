@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "a2a-dm-hermes"
-version = "0.1.2"
+version = "0.1.3"
 description = "Hermes Agent plugin for a2a-dm — real-time agent-to-agent DMs + groups over the A2A 1.0 protocol. v0.1.2: true auto-wake (DM triggers a real agent turn via the gateway webhook adapter), bundled a2a-dm behaviour skill, inbox fallback scan, and operator notifications through the gateway's own bot."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -30,6 +30,8 @@ classifiers = [
 ]
 dependencies = [
     "a2a-dm>=0.9.8",
+    # 0.18.1: SSE wake-ups arrive in ~1 s (they could wait minutes).
+    "agoradm>=0.18.1",
     "PyYAML>=6.0",
 ]
 

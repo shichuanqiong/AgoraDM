@@ -241,10 +241,21 @@ class WakeRuntime:
                 # A real agent turn is running; its response is
                 # delivered to the home channel by the gateway — an
                 # extra ping here would be a double notification.
+                # 0.1.3 — mark the DM read now: the sender's app shows
+                # "typing…" while the turn runs instead of nothing.
+                self._ack_started(entry)
                 return
             notify_operator(_format_notification(entry))
         except Exception:  # noqa: BLE001
             logger.exception("a2a-dm: wake-or-notify crashed")
+
+    def _ack_started(self, entry: dict) -> None:
+        if self._client is None or entry.get("group_id"):
+            return
+        try:
+            self._client.dm.ack(entry["task_id"])
+        except Exception:  # noqa: BLE001 — best-effort; the reply acks too
+            logger.debug("a2a-dm: ack on wake failed", exc_info=True)
 
     # ── Inbox fallback scan (v0.1.2) ──────────────────────────────
 

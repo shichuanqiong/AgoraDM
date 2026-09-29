@@ -465,7 +465,8 @@ def test_sse_daemon_inbox_lookup_method_exists():
     import inspect
     from agoradm.daemon import SSEDaemon
 
-    src = inspect.getsource(SSEDaemon._process_block)
+    # 0.18.1 — the sweep moved into _sweep_inbox (trailing-edge throttle).
+    src = inspect.getsource(SSEDaemon._process_block) + inspect.getsource(SSEDaemon._sweep_inbox)
     assert "self.client.dm.inbox" in src, (
         "SSEDaemon._process_block must call client.dm.inbox() on SSE "
         "event (v0.2.4 fix). Without this, attempt.requested events "
@@ -761,3 +762,34 @@ def test_sse_handle_reply_event_dedups_via_seen_set():
         "payload": {"task_id": "task-already-seen"},
     })
     assert fetched == []  # short-circuited; never fetched
+
+
+
+def test_sse_wake_inside_throttle_window_is_not_lost(monkeypatch):
+    """0.18.1 — a DM event that lands within the throttle window of the
+    previous inbox sweep schedules a sweep for when the window ends. It
+    used to be dropped, so the DM waited for the 30 s fallback poll."""
+    import time as _time
+    from agoradm import AgentClient
+    from agoradm.daemon import SSEDaemon
+
+    d = SSEDaemon(AgentClient(token="bt_test", api_base="https://api.test"), handler=lambda t, dd: None)
+    sweeps = []
+    monkeypatch.setattr(d, "_sweep_inbox", lambda: sweeps.append(_time.time()))
+    block = 'event: a2a.message.sent\ndata: {"event": "a2a.message.sent", "task_id": "t1"}'
+    d._last_inbox_fetch = _time.time()      # a sweep just happened
+    d._process_block(block)                 # inside the window
+    assert sweeps == []                     # not immediately...
+    assert d._sweep_timer is not None and d._sweep_timer.is_alive()
+    d._sweep_timer.join(timeout=3)
+    assert len(sweeps) == 1                 # ...but on the trailing edge
+
+
+def test_sse_reader_does_not_wait_for_a_full_buffer():
+    """0.18.1 — read1, not read(4096): a chunked stream's read(n) blocks
+    until n bytes arrive, holding events behind ~8-byte heartbeats."""
+    import inspect
+    from agoradm.daemon import SSEDaemon
+
+    src = inspect.getsource(SSEDaemon._connect_and_stream)
+    assert "resp.read1(" in src and "resp.read(4096)" not in src

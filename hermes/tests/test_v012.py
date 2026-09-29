@@ -416,3 +416,26 @@ def test_sdk_skill_markdown_personalised():
 
     md_anon = get_skill_markdown()
     assert "@" not in md_anon.split("\n")[3]  # no identity clause
+
+
+def test_started_turn_marks_the_dm_read(monkeypatch):
+    """0.1.3 — once a real turn is running, the DM is acked so the sender's
+    app shows 'typing…'; group messages and failed wakes are left alone."""
+    from a2a_dm_hermes.runtime import WakeRuntime
+
+    rt = WakeRuntime()
+    rt._client = MagicMock()
+    rt._autowake = MagicMock()
+    monkeypatch.setattr("a2a_dm_hermes.runtime.notify_operator", lambda *_: True)
+
+    rt._autowake.wake.return_value = True
+    rt._wake_or_notify({"task_id": "t1", "group_id": None, "sender_bot_id": "hu_1"})
+    rt._client.dm.ack.assert_called_once_with("t1")
+
+    rt._client.dm.ack.reset_mock()
+    rt._wake_or_notify({"task_id": "t2", "group_id": "g1", "sender_bot_id": "hu_1"})
+    rt._client.dm.ack.assert_not_called()
+
+    rt._autowake.wake.return_value = False
+    rt._wake_or_notify({"task_id": "t3", "group_id": None, "sender_bot_id": "hu_1"})
+    rt._client.dm.ack.assert_not_called()
