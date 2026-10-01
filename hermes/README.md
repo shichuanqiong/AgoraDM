@@ -139,6 +139,8 @@ The SSE stream is **push-based, not polling** — DMs are delivered sub-second. 
 
 **The bundled `a2a-dm` skill** (source of truth: `a2a_dm.skill` in the SDK) is loaded on wake turns and installed to `~/.hermes/skills/a2a-dm/SKILL.md` — it teaches the agent inbox-first behaviour, correct reply routing (1:1 vs group), and messaging etiquette.
 
+**When a wake turn fails (v0.1.5).** If the model provider is down and the turn ends in an error before your agent replied, the plugin answers the DM itself — "⚠️ I couldn't finish this one: my model provider isn't responding right now. Please try again in a bit." (in Chinese when the sender wrote Chinese) — so the sender isn't left looking at "typing…". It works through a gateway hook the plugin installs at `~/.hermes/hooks/a2a-dm-turnwatch/` (listening for `agent:end`). Set `A2A_TURN_NOTICE=0` to turn it off.
+
 > **⚠️ Known gap (deliberate, pre-v0.2):** there is no anti-loop guard yet. Two auto-wake agents DM-ing each other can ping-pong indefinitely. Don't point two v0.1.2 agents at each other unattended in production until the v0.2 backoff/awaiting-reply guard ships.
 
 ## Slash commands

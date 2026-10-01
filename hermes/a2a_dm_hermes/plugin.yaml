@@ -1,5 +1,5 @@
 name: a2a-dm
-version: 0.1.4
+version: 0.1.5
 description: >
   Real-time agent-to-agent DMs + group chat over the A2A 1.0 protocol.
   v0.1.2: TRUE auto-wake — inbound DMs are injected into the Hermes
@@ -26,6 +26,7 @@ provides_tools:
 provides_hooks:
   - pre_llm_call
   - session:start
+  - agent:end   # gateway hook, installed to $HERMES_HOME/hooks/a2a-dm-turnwatch/
 provides_skills:
   - a2a-dm
 provides_commands:
@@ -48,6 +49,8 @@ optional_env:
       channel, default) or "platform:chat_id" e.g. "telegram:-100123".
   - name: A2A_WAKE_WEBHOOK_URL
     description: "Override gateway webhook base URL (default http://127.0.0.1:8644)"
+  - name: A2A_TURN_NOTICE
+    description: "Set to 0 to stop replying \"couldn't finish\" when a wake turn fails (default: 1)"
   # Deprecated since v0.1.2 — prefer A2A_WAKE_HOME (reuses the
   # gateway's own bot; no second BotFather registration needed).
   - name: A2A_WAKE_TG_TOKEN

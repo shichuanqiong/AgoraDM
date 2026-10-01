@@ -19,6 +19,9 @@ Hermes calls :func:`register` exactly once. We register:
   * The bundled ``a2a-dm`` behaviour skill (v0.1.2 — single source
     in the SDK, see :mod:`a2a_dm.skill`).
   * ``/a2adm`` slash command that dumps runtime status.
+  * A gateway ``agent:end`` hook that tells the sender when the turn
+    their DM woke died on a provider error (v0.1.5 — see
+    :mod:`a2a_dm_hermes.turnwatch`).
   * On-start side effect: bring up the SSE wake runtime, which now
     auto-wakes the agent through the gateway webhook adapter when a
     DM lands (v0.1.2 — see :mod:`a2a_dm_hermes.autowake`).
@@ -30,11 +33,11 @@ import logging
 import os
 from typing import Any
 
-from a2a_dm_hermes import schemas, skillinstall, tools
+from a2a_dm_hermes import schemas, skillinstall, tools, turnwatch
 from a2a_dm_hermes.autowake import enabled as _autowake_enabled
 from a2a_dm_hermes.runtime import WakeRuntime, format_wake_context
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +200,14 @@ def register(ctx) -> None:
     except Exception:  # noqa: BLE001
         logger.debug("a2a-dm: register_command(a2adm) unavailable")
 
-    # 6. Bring up the SSE runtime (which also registers the gateway
+    # 6. Gateway agent:end hook (v0.1.5). Gateway hooks load right
+    #    after plugins, so the files land in time for this boot.
+    try:
+        turnwatch.install_gateway_hook()
+    except Exception:  # noqa: BLE001
+        logger.exception("a2a-dm: gateway hook install failed")
+
+    # 7. Bring up the SSE runtime (which also registers the gateway
     #    webhook auto-wake routes when enabled). Errors are logged,
     #    not raised — a bad SSE start should not prevent tools from
     #    working.
