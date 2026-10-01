@@ -23,6 +23,7 @@ Quickstart::
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from typing import Optional
 
@@ -30,6 +31,8 @@ from agoradm.client import AgentClient
 from agoradm.daemon._base import MessageHandler, _BaseDaemon
 from agoradm.daemon._dedup import LRUSet
 from agoradm.exceptions import TransportError
+
+LONG_POLL_S = 50.0   # what the platform holds an inbox request for at most
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +73,18 @@ class InboxDaemon(_BaseDaemon):
         # deque popped its oldest entry, the corresponding set entry
         # was never removed.
         self._seen: LRUSet = LRUSet(max_size=dedup_size)
+        # 0.19 fast lane: None = not known yet, True = the server holds the
+        # inbox request until a DM arrives, False = old server → interval.
+        self._long_poll: Optional[bool] = None
+        # Long polls ask only for DMs newer than the newest we've seen, so a
+        # DM someone else already handed out (SSE sweep, a deferring
+        # handler) doesn't bring the next poll straight back. A plain poll
+        # every interval_s still re-offers deferred, unacked DMs.
+        self._cursor: Optional[str] = None
+        self._last_full = 0.0
+        # Shared with SSEDaemon so its sweep and this loop don't dispatch
+        # the same DM at the same moment.
+        self._dispatch_lock = threading.Lock()
 
     def _run_loop(self) -> None:
         logger.info(
@@ -78,13 +93,30 @@ class InboxDaemon(_BaseDaemon):
         )
         while not self._stop_event.is_set():
             poll_start = time.time()
+            fresh = 0
             try:
-                inbox = self.client.dm.inbox(include_acked=False)
+                if self._long_poll is False or poll_start - self._last_full >= self.interval_s:
+                    inbox = self.client.dm.inbox(include_acked=False)
+                    self._last_full = poll_start
+                else:
+                    # Held open by the server until a DM arrives (≤ 50 s):
+                    # delivery in milliseconds instead of every interval_s.
+                    inbox = self.client.dm.inbox(include_acked=False, wait=LONG_POLL_S, after=self._cursor)
+                    if self._long_poll is None:
+                        self._long_poll = "wait" in (inbox.raw or {})
+                        logger.info("%s: %s", self.name,
+                                    "long polling" if self._long_poll else
+                                    "server doesn't long-poll; polling every %.1fs" % self.interval_s)
+                newest = max((t.created_at for t in inbox.tasks if t.created_at), default=None)
+                if newest and (self._cursor is None or newest > self._cursor):
+                    self._cursor = newest
                 self.stats.poll_count += 1
                 self.stats.last_poll_time = poll_start
                 for task in inbox.pending:
+                  with self._dispatch_lock:
                     if task.id in self._seen:
                         continue
+                    fresh += 1
                     logger.info(
                         "%s: DM from %s: %.50s",
                         self.name,
@@ -107,6 +139,8 @@ class InboxDaemon(_BaseDaemon):
                     # _seen is just belt-and-suspenders.
                     if dispatched and self.auto_ack:
                         self._seen.add(task.id)
+                if self._long_poll is not False:
+                    continue   # straight back: the server's wait paces us
             except TransportError:
                 logger.warning("%s: transport error, retrying", self.name)
                 self.stats.errors += 1
@@ -114,6 +148,7 @@ class InboxDaemon(_BaseDaemon):
                 logger.exception("%s: poll error", self.name)
                 self.stats.errors += 1
 
+            # Old server or an error: wait out the interval.
             elapsed = time.time() - poll_start
             remaining = self.interval_s - elapsed
             if remaining > 0 and not self._stop_event.is_set():

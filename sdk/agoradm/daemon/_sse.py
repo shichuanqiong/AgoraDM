@@ -139,6 +139,9 @@ class SSEDaemon(_BaseDaemon):
         # Re-point fallback dedup + handler at the parent so both
         # threads see the same view of "what's been seen".
         self._fallback._seen = self._seen
+        # 0.19: the fallback long-polls (delivers in ms on current servers);
+        # one lock for both paths so a DM isn't dispatched twice at once.
+        self._fallback._dispatch_lock = self._sweep_lock
         # Reconnect backoff: starts at 1s, caps at 30s
         self._reconnect_delay: float = 1.0
         # v0.2.4 — throttle SSE-triggered inbox fetches under event

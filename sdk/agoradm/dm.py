@@ -364,6 +364,8 @@ class DM:
         include_acked: bool = True,
         limit: int = 50,
         sender: Optional[str] = None,
+        after: Optional[str] = None,
+        wait: float = 0,
     ) -> InboxView:
         """List incoming A2A DMs (you are the recipient).
 
@@ -397,6 +399,24 @@ class DM:
           filter.
         """
         capped = max(1, min(int(limit), 200))
+        if wait or after:
+            # 0.19 fast lane — long poll the v0.2 inbox only: the server
+            # holds the request until a DM newer than ``after`` arrives
+            # (≤ 50 s). ``view.raw["wait"]`` is set by servers that
+            # long-poll; older ones answer at once without it.
+            params: dict[str, Any] = {"state": "all" if include_acked else "submitted", "limit": capped}
+            if sender:
+                params["sender"] = sender
+            if after:
+                params["after"] = after
+            w = max(0.0, min(float(wait or 0), 50.0))
+            if w:
+                params["wait"] = w
+            r = self._http.request("GET", "/a2a/v1/messages/inbox", params=params, timeout_s=w + 20)
+            r = r if isinstance(r, dict) else {}
+            view = InboxView.from_dict({"count": len(r.get("tasks") or []), "tasks": list(r.get("tasks") or [])})
+            view.raw = r
+            return view
         legacy_params: dict[str, Any] = {
             "include_acked": "true" if include_acked else "false",
             "limit": capped,

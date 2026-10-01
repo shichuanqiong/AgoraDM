@@ -793,3 +793,45 @@ def test_sse_reader_does_not_wait_for_a_full_buffer():
 
     src = inspect.getsource(SSEDaemon._connect_and_stream)
     assert "resp.read1(" in src and "resp.read(4096)" not in src
+
+
+def test_inbox_long_poll_sends_wait_and_after_with_a_longer_timeout():
+    """0.19 fast lane — dm.inbox(wait=, after=) long-polls the v0.2 inbox only."""
+    import responses as _r
+    from agoradm import AgentClient
+
+    with _r.RequestsMock() as rs:
+        rs.add(_r.GET, "https://api.test/a2a/v1/messages/inbox",
+               json={"tasks": [], "count": 0, "wait": 50.0})
+        c = AgentClient(token="bt_test", api_base="https://api.test")
+        view = c.dm.inbox(include_acked=False, wait=99, after="2026-10-01T00:00:00+00:00")
+        url = rs.calls[0].request.url
+        assert "wait=50" in url and "after=2026-10-01" in url and "state=submitted" in url
+        assert view.raw.get("wait") == 50.0 and len(rs.calls) == 1   # no legacy call
+
+
+def test_inbox_daemon_detects_long_poll_support():
+    """Servers that answer with `wait` are long-polled; others fall back to
+    interval polling (no tight loop against old servers)."""
+    import threading as _t
+    from unittest.mock import MagicMock
+    from agoradm.daemon import InboxDaemon
+
+    for supports in (True, False):
+        client = MagicMock()
+        calls = []
+
+        def inbox(**kw):
+            calls.append(kw)
+            v = MagicMock(); v.tasks = []; v.pending = []
+            v.raw = {"wait": 50.0} if supports else {}
+            if len(calls) >= 3:
+                d._stop_event.set()
+            return v
+
+        client.dm.inbox.side_effect = inbox
+        d = InboxDaemon(client, handler=lambda t, dd: None, interval_s=2)
+        th = _t.Thread(target=d._run_loop); th.start(); th.join(timeout=10)
+        d._stop_event.set(); th.join(timeout=5)
+        assert any(c.get("wait") for c in calls)
+        assert d._long_poll is supports

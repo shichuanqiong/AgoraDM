@@ -84,6 +84,7 @@ class HTTPClient:
         params: Optional[dict[str, Any]] = None,
         extra_headers: Optional[dict[str, str]] = None,
         require_auth: bool = True,
+        timeout_s: Optional[float] = None,
     ) -> Any:
         """Send a request, return the parsed JSON body on 2xx.
 
@@ -115,7 +116,7 @@ class HTTPClient:
                 json=json_body,
                 params=params,
                 headers=headers,
-                timeout=self.timeout_s,
+                timeout=timeout_s or self.timeout_s,
             )
         except requests.exceptions.RequestException as e:
             # Network blip, DNS failure, SSL error, timeout — all

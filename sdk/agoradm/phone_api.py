@@ -75,15 +75,39 @@ class PhoneAPI:
         })
         task_id = env.get("id")
         deadline = time.monotonic() + max(0.0, timeout)
+        # 0.19 fast lane: wait on the inbox for the answer (the server holds
+        # the request until a DM newer than our call arrives) instead of
+        # checking every `poll` seconds. Old servers: plain polling.
+        after = env.get("created_at")
+        long_poll = True
         while True:
             found = self.result(call_id, operator=op["human_id"])
             if found is not None:
                 return {**found, "call_id": call_id, "task_id": task_id}
-            if time.monotonic() >= deadline:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
                 return {"ok": None, "pending": True, "call_id": call_id, "task_id": task_id,
                         "hint": "No answer yet — the phone may be waiting for its owner's OK or be offline. "
                                 "The result arrives as a reply DM; check with phone.result(call_id)."}
-            time.sleep(poll)
+            if not long_poll or not after:
+                time.sleep(min(poll, remaining))
+                continue
+            try:
+                view = self._client.dm.inbox(include_acked=True, sender=op["human_id"], after=after,
+                                             wait=min(remaining, 50.0))
+            except Exception:  # noqa: BLE001 — fall back to polling
+                long_poll = False
+                continue
+            if "wait" not in (view.raw or {}):
+                long_poll = False
+            for t in view.tasks:
+                for d in t.data or []:
+                    if isinstance(d, dict) and d.get("elvarone") == "tool_result" and d.get("call_id") == call_id:
+                        return {"ok": bool(d.get("ok")), "result": d.get("result", ""),
+                                "reply_task_id": t.id, "call_id": call_id, "task_id": task_id}
+            newest = max((t.created_at for t in view.tasks if t.created_at), default=None)
+            if newest:
+                after = newest   # other DMs from the owner arrived; keep waiting for ours
 
     def result(self, call_id: str, operator: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """The phone's answer to ``call_id`` if it has arrived:
