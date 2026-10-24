@@ -4,6 +4,7 @@ name: release
 #   sdk-v*.*.*     -> build & publish sdk/     (PyPI package: a2a-dm)
 #   mcp-v*.*.*     -> build & publish mcp/     (PyPI package: a2a-dm-mcp)
 #   hermes-v*.*.*  -> build & publish hermes/  (PyPI package: a2a-dm-hermes)
+#   uhp-v*.*.*     -> build & publish harnessrouter/ (PyPI package: agoradm-uhp)
 #
 # One-time PyPI setup per package:
 #   https://pypi.org/manage/project/<package>/settings/publishing/
@@ -18,6 +19,7 @@ on:
       - "sdk-v*.*.*"
       - "mcp-v*.*.*"
       - "hermes-v*.*.*"
+      - "uhp-v*.*.*"
 
 jobs:
   release:
@@ -36,6 +38,8 @@ jobs:
             echo "dir=sdk" >> "$GITHUB_OUTPUT"
           elif [[ "${GITHUB_REF_NAME}" == hermes-v* ]]; then
             echo "dir=hermes" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_NAME}" == uhp-v* ]]; then
+            echo "dir=harnessrouter" >> "$GITHUB_OUTPUT"
           else
             echo "dir=mcp" >> "$GITHUB_OUTPUT"
           fi
