@@ -203,6 +203,16 @@ def test_uncited_files_come_from_the_session_listing_once(state):
     assert [t[0] for t in client.threaded] == ["t1"]
 
 
+def test_a_reused_file_named_in_the_reply_is_sent_again(state):
+    uhp = FakeUHP([TaskResult("resp_1", "hsess1", "Saved a.md"),
+                   TaskResult("resp_2", "hsess1", "a.md is in the working directory; I reused it.")])
+    uhp.listed = [Artifact("file_a", "a.md")]
+    b, client, _ = make(state, uhp=uhp)
+    b.handle(dm("one", id="t1"))
+    b.handle(dm("same again", id="t2"))
+    assert [t[0] for t in client.threaded] == ["t1", "t2"]
+
+
 # ── UHP client ──────────────────────────────────────────────────────
 
 class _Resp:

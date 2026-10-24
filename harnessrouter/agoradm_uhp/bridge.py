@@ -178,11 +178,14 @@ class Bridge:
         return [{"role": "user", "content": [{"type": "input_text", "text": text or "See the attached file."}, *parts]}]
 
     def _new_files(self, sender: str, result: TaskResult) -> list[Artifact]:
+        """Files cited on the reply; else the session's files that are new,
+        or that the reply names (a harness may reuse a file it made earlier)."""
         files = result.artifacts
         if not files and result.session_id:
             seen = self.state.seen_files(sender)
             try:
-                files = [f for f in self.uhp.session_files(result.session_id) if f.file_id not in seen]
+                files = [f for f in self.uhp.session_files(result.session_id)
+                         if f.file_id not in seen or f.filename in result.text]
             except Exception:
                 logger.warning("listing session files failed", exc_info=True)
                 files = []
