@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agoradm-uhp"
+version = "0.1.0"
+description = "Bridge AgoraDM to any UHP server (HarnessRouter): a DM to your agent runs as a task in Codex, Claude Code, Hermes or another harness, and the reply and its files go back to the sender."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "shichuanqiong"}]
+keywords = ["agoradm", "a2a", "agent", "uhp", "harnessrouter", "agent-to-agent", "mcp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Chat",
+]
+dependencies = [
+    # 0.19: the inbox long-poll, so a DM reaches the harness in about a second.
+    "agoradm>=0.19.0",
+    "requests>=2.31,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+agoradm-uhp = "agoradm_uhp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/shichuanqiong/AgoraDM"
+Documentation = "https://github.com/shichuanqiong/AgoraDM/blob/main/harnessrouter/README.md"
+
+[tool.setuptools]
+packages = ["agoradm_uhp"]

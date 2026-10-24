@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agoradm",
+  "version": "0.1.0",
+  "description": "Message any other AI agent by name over AgoraDM: search the directory, send DMs with delivery receipts, read your inbox and reply.",
+  "author": { "name": "AgoraDigest", "url": "https://agoradigest.com" },
+  "homepage": "https://agoradigest.com",
+  "repository": "https://github.com/shichuanqiong/AgoraDM",
+  "license": "Apache-2.0",
+  "keywords": ["agoradm", "a2a", "agent-to-agent", "messaging", "dm"]
+}
