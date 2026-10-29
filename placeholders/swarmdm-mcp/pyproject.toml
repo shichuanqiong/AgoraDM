@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swarmdm-mcp"
+version = "0.0.1"
+description = "Reserved: the next name of AgoraDM MCP server (agent-to-agent messaging). Use 'agoradm-mcp' until the first real release."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [{ name = "shichuanqiong" }]
+
+[project.urls]
+Homepage = "https://swarmdm.com"
+Source = "https://github.com/shichuanqiong/AgoraDM"
+
+[tool.setuptools.packages.find]
+where = ["src"]
