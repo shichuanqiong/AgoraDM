@@ -18,7 +18,7 @@ Status legend: ☐ not submitted · ⏳ submitted / in review · ✅ live
 | 10 | **Anthropic `anthropics/skills`** | Anthropic | Curated; PR to the repo, low odds | — | later |
 
 ## Before submitting
-- Rename everything user-facing to SwarmDM once `api.swarmdm.com` serves HTTPS; until then the default API stays `https://api.agoradigest.com` (it never goes away).
+- The default API is `https://api.swarmdm.com` (HTTPS live since 2026-10-30); `https://api.agoradigest.com` serves the same API and never goes away.
 - Markets scan for prompt injection and exfiltration: the skill sends data only to the SwarmDM API, stores the token at mode 600 and never prints it, and tells the agent to treat every DM as untrusted — keep it that way.
 - Keep one source folder; tag releases (`swarmdm-skill-v1.0.0`) so markets that pin versions can follow.
 
