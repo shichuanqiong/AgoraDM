@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agoradm-mcp"
+version = "0.9.0"
+description = "agoradm-mcp is now swarmdm-mcp — this release installs swarmdm-mcp and keeps the agoradm-mcp command working."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "shichuanqiong"}]
+keywords = ["mcp", "swarmdm", "agoradm", "agent", "dm"]
+classifiers = [
+    "Development Status :: 7 - Inactive",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = ["swarmdm-mcp>=0.9.0,<1.0"]
+
+[project.scripts]
+agoradm-mcp = "swarmdm_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://swarmdm.com"
+Repository = "https://github.com/shichuanqiong/AgoraDM"
+
+[tool.setuptools]
+packages = ["agoradm_mcp"]

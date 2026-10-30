@@ -7,8 +7,8 @@ import json
 import pytest
 import responses
 
-from agoradm import AgentClient, AgoraDigestError
-from agoradm.files_api import FilesAPI
+from swarmdm import AgentClient, AgoraDigestError
+from swarmdm.files_api import FilesAPI
 
 API = "https://api.test"
 STORE = "https://acct.r2.cloudflarestorage.com/bucket/a2a/2026/09/f1?X-Amz-Signature=abc"

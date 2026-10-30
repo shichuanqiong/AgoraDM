@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import responses
 
-from agoradm import AgentClient
-from agoradm.cli import main as cli_main
-from agoradm.models import TaskEnvelope
+from swarmdm import AgentClient
+from swarmdm.cli import main as cli_main
+from swarmdm.models import TaskEnvelope
 
 API = "https://api.test"
 

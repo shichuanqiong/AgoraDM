@@ -21,19 +21,19 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 
-from agoradm import AgentClient, Friend, TaskEnvelope
-from agoradm.daemon import (
+from swarmdm import AgentClient, Friend, TaskEnvelope
+from swarmdm.daemon import (
     SSEDaemon,
     TriageDecision,
     TriagePolicy,
     TurnCounter,
 )
-from agoradm.daemon._base import _BaseDaemon
-from agoradm.daemon.triage import (
+from swarmdm.daemon._base import _BaseDaemon
+from swarmdm.daemon.triage import (
     TURN_COUNT_KEY,
     _partner_bot_id_from_task,
 )
-from agoradm.exceptions import TransportError
+from swarmdm.exceptions import TransportError
 
 
 # ── Test helpers ────────────────────────────────────────────────
@@ -116,7 +116,7 @@ def test_triage_decision_fields():
 def test_turn_counter_check_under_cap_returns_ok():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 3})},
         status=200,
     )
@@ -134,7 +134,7 @@ def test_turn_counter_check_under_cap_returns_ok():
 def test_turn_counter_check_at_cap_blocks():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 10})},
         status=200,
     )
@@ -151,7 +151,7 @@ def test_turn_counter_check_over_cap_still_blocks():
     """Counter can drift past cap (manual edits, races). Still blocks."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 47})},
         status=200,
     )
@@ -167,7 +167,7 @@ def test_turn_counter_check_missing_friend_returns_zero():
     """Not friended → fresh budget. Don't block strangers."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/stranger",
+        "https://api.swarmdm.com/a2a/v1/friends/stranger",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -183,7 +183,7 @@ def test_turn_counter_check_missing_key_returns_zero():
     """Friend exists but no _turn_count key (Phase 7.3 default {})."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={"unrelated": "data"})},
         status=200,
     )
@@ -199,7 +199,7 @@ def test_turn_counter_check_corrupt_value_resets():
     """Memory key got clobbered with a string → coerce to 0, fresh start."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: "oops"})},
         status=200,
     )
@@ -214,7 +214,7 @@ def test_turn_counter_check_negative_value_clamped():
     """Defensive: negative count → 0 (no "free turns from going negative")."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: -5})},
         status=200,
     )
@@ -229,7 +229,7 @@ def test_turn_counter_bump_increments():
     """Bump reads current count, writes count+1, preserves other memory keys."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(
             memory={TURN_COUNT_KEY: 4, "fav": "blue"}
         )},
@@ -237,7 +237,7 @@ def test_turn_counter_bump_increments():
     )
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(
             memory={TURN_COUNT_KEY: 5, "fav": "blue"}
         )},
@@ -259,13 +259,13 @@ def test_turn_counter_bump_starts_at_one_when_missing():
     """No prior _turn_count key → first bump writes 1."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 1})},
         status=200,
     )
@@ -279,7 +279,7 @@ def test_turn_counter_bump_noop_when_not_friended():
     """Don't auto-friend on bump — operator owns the friend list."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/stranger",
+        "https://api.swarmdm.com/a2a/v1/friends/stranger",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -294,7 +294,7 @@ def test_turn_counter_bump_noop_when_not_friended():
 def test_turn_counter_reset_zeroes_key():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(
             memory={TURN_COUNT_KEY: 8, "fav": "red"}
         )},
@@ -302,7 +302,7 @@ def test_turn_counter_reset_zeroes_key():
     )
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 0, "fav": "red"})},
         status=200,
     )
@@ -346,21 +346,21 @@ def test_dispatch_runs_handler_when_under_cap():
     # check (under cap)
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 3})},
         status=200,
     )
     # bump's GET
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 3})},
         status=200,
     )
     # bump's PATCH
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 4})},
         status=200,
     )
@@ -390,7 +390,7 @@ def test_dispatch_skips_handler_when_capped():
     """Triage gate blocks → handler NOT invoked → cap_exceeded_count bumps."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 10})},
         status=200,
     )
@@ -419,7 +419,7 @@ def test_dispatch_skips_handler_when_capped():
 def test_on_cap_exceeded_callback_fires_with_decision():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 10})},
         status=200,
     )
@@ -479,7 +479,7 @@ def test_triage_check_failure_fails_open():
     Better to over-respond than to silently swallow real messages."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         body=ConnectionError("network down"),
     )
     client = AgentClient(token="bt_test", bot_id="me")
@@ -534,7 +534,7 @@ def test_dispatch_reply_gated_when_count_on_replies_true():
     """count_on_replies=True (default) → reply handler also gated."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={TURN_COUNT_KEY: 10})},
         status=200,
     )

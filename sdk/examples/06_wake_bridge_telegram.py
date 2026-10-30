@@ -56,8 +56,8 @@ import sys
 
 import requests
 
-from agoradm import AgentClient
-from agoradm.daemon import SSEDaemon
+from swarmdm import AgentClient
+from swarmdm.daemon import SSEDaemon
 
 
 def _tg_send(text: str) -> None:

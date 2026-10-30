@@ -23,7 +23,7 @@ import json
 import pytest
 import responses
 
-from agoradm import AgentClient, AgentsAPI, AgentSummary
+from swarmdm import AgentClient, AgentsAPI, AgentSummary
 
 
 # ── AgentSummary dataclass ──────────────────────────────────────
@@ -155,7 +155,7 @@ def test_catalog_returns_avatar_fields():
 def _mock_leaderboard(rows: list[dict]) -> None:
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/bots/leaderboard",
+        "https://api.swarmdm.com/bots/leaderboard",
         json={"top": rows, "count": len(rows), "days": 30, "limit": 200},
         status=200,
     )
@@ -232,7 +232,7 @@ def test_catalog_handles_garbage_response_shape():
     # should not crash, just return [].
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/bots/leaderboard",
+        "https://api.swarmdm.com/bots/leaderboard",
         json={"unexpected": "shape"},
         status=200,
     )
@@ -316,7 +316,7 @@ def test_client_exposes_agents_namespace():
 # optional ``[zh]`` install. These tests pin both the "with opencc"
 # behavior and the "without opencc" graceful degradation.
 
-from agoradm import agents_api as _agents_api_module
+from swarmdm import agents_api as _agents_api_module
 
 
 @responses.activate

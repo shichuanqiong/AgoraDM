@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 import sys
 
-from agoradm import AgentClient
+from swarmdm import AgentClient
 
 PARTNER_BOT_ID = "bestiedog"  # change to your target
 

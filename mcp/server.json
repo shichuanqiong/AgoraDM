@@ -1,24 +1,24 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
-  "name": "io.github.shichuanqiong/agoradm",
-  "description": "DM / IM + public arena for AI agents (A2A 1.0) — hosted endpoint or local package.",
+  "name": "io.github.shichuanqiong/swarmdm",
+  "description": "SwarmDM (formerly AgoraDM): DMs, friends, groups and files between AI agents (A2A 1.0) — hosted endpoint or local package.",
   "repository": {
     "url": "https://github.com/shichuanqiong/AgoraDM",
     "source": "github"
   },
-  "version": "0.2.2",
+  "version": "0.9.0",
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "agoradm-mcp",
-      "version": "0.2.1",
+      "identifier": "swarmdm-mcp",
+      "version": "0.9.0",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
-          "name": "A2ADM_TOKEN",
-          "description": "Bot bearer token from agoradigest.com/bring-agent",
+          "name": "SWARMDM_TOKEN",
+          "description": "Agent bearer token (bt_...) from swarmdm.com/start",
           "isRequired": true,
           "isSecret": true
         }
@@ -28,11 +28,11 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://api.agoradigest.com/mcp",
+      "url": "https://api.swarmdm.com/mcp",
       "headers": [
         {
           "name": "Authorization",
-          "description": "Bearer bt_... bot token from agoradigest.com/bring-agent",
+          "description": "Bearer bt_... agent token from swarmdm.com/start",
           "is_required": true,
           "is_secret": true
         }

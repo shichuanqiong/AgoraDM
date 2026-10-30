@@ -21,7 +21,7 @@ import json
 
 import pytest
 
-from agoradm.agent_card import (
+from swarmdm.agent_card import (
     AgentAuthentication,
     AgentCapability,
     AgentCard,
@@ -57,7 +57,7 @@ def test_capability_defensive_on_non_dict():
 def test_endpoint_roundtrip():
     ep = AgentEndpoint(
         kind="dm",
-        url="https://api.agoradigest.com/a2a/v1/messages",
+        url="https://api.swarmdm.com/a2a/v1/messages",
         description="DM gateway",
         auth_required=True,
     )
@@ -93,7 +93,7 @@ def test_card_parses_platform_shape():
     platform = {
         "name": "bestiedog",
         "description": "AgoraDigest agent — top-rated in engineering",
-        "url": "https://api.agoradigest.com/a2a/v1/bots/bestiedog/message:send",
+        "url": "https://api.swarmdm.com/a2a/v1/bots/bestiedog/message:send",
         "version": "1.0.0",
         "documentationUrl": "https://agoradigest.com/about",
         "capabilities": {
@@ -257,7 +257,7 @@ def test_roundtrip_pythonic_to_spec_to_pythonic():
         .add_capability("streaming", enabled=True)
         .add_capability("stateTransitionHistory", enabled=True)
         .add_capability("a2a-dm", enabled=True, description="DM gateway")
-        .add_endpoint("dm", "https://api.agoradigest.com/a2a/v1/messages")
+        .add_endpoint("dm", "https://api.swarmdm.com/a2a/v1/messages")
         .add_endpoint("profile", "https://agoradigest.com/bots/bestiedog")
     )
     js = original.to_json()
@@ -294,7 +294,7 @@ def test_from_json_garbage_input():
 
 def test_agent_client_card_default_none():
     """client.card defaults to None — the SDK doesn't fabricate one."""
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test")
     assert c.card is None
@@ -302,7 +302,7 @@ def test_agent_client_card_default_none():
 
 def test_agent_client_card_constructor_arg():
     """Pass card= to the constructor to advertise the user's agent."""
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     card = AgentCard(name="bestiedog", bot_id="bestiedog", vertical="engineering")
     c = AgentClient(token="bt_test", card=card)
@@ -313,7 +313,7 @@ def test_agent_client_card_constructor_arg():
 def test_agent_client_card_is_mutable():
     """Late-binding the card after construction is allowed; daemons
     pick up whatever's set when they read client.card."""
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test")
     c.card = AgentCard(name="late", bot_id="late")
@@ -365,7 +365,7 @@ def test_to_json_defensive_on_unserializable_field():
 def test_agent_card_api_attached_to_client():
     """v0.2.6 — client.agent_card namespace exists and has the
     discover/publish surface."""
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test", bot_id="bestiedog")
     assert c.agent_card is not None
@@ -379,11 +379,11 @@ def test_agent_card_discover_fetches_and_parses():
     """v0.2.6 — discover(bot_id) hits GET /bots/{id}/agent_card.json
     and returns a parsed AgentCard."""
     import responses as _r
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     _r.add(
         _r.GET,
-        "https://api.agoradigest.com/bots/laobaigan/agent_card.json",
+        "https://api.swarmdm.com/bots/laobaigan/agent_card.json",
         json={
             "name": "Laobaigan",
             "description": "Test agent",
@@ -406,7 +406,7 @@ def test_agent_card_discover_fetches_and_parses():
 
 
 def test_agent_card_discover_rejects_empty_bot_id():
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test")
     with pytest.raises(ValueError):
@@ -417,11 +417,11 @@ def test_agent_card_discover_rejects_empty_bot_id():
 def test_agent_card_publish_uses_client_card_by_default():
     """v0.2.6 — publish() with no args uses client.card."""
     import responses as _r
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     _r.add(
         _r.PUT,
-        "https://api.agoradigest.com/bots/bestiedog/agent_card.json",
+        "https://api.swarmdm.com/bots/bestiedog/agent_card.json",
         json={
             "ok": True,
             "bot_id": "bestiedog",
@@ -443,7 +443,7 @@ def test_agent_card_publish_uses_client_card_by_default():
 
 
 def test_agent_card_publish_rejects_missing_bot_id():
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test", card=AgentCard(name="x", bot_id="x"))
     # No bot_id set on client → can't publish (we don't know the path).
@@ -452,7 +452,7 @@ def test_agent_card_publish_rejects_missing_bot_id():
 
 
 def test_agent_card_publish_rejects_missing_card():
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test", bot_id="bestiedog")
     # No card set, no card= passed.
@@ -463,13 +463,13 @@ def test_agent_card_publish_rejects_missing_card():
 def test_agent_card_publish_with_explicit_card_overrides_client_card():
     """publish(card=...) replaces client.card with the published one."""
     import responses as _r
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     @_r.activate
     def go():
         _r.add(
             _r.PUT,
-            "https://api.agoradigest.com/bots/bestiedog/agent_card.json",
+            "https://api.swarmdm.com/bots/bestiedog/agent_card.json",
             json={
                 "ok": True,
                 "bot_id": "bestiedog",

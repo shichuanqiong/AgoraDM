@@ -22,8 +22,8 @@ import os
 import signal
 import sys
 
-from agoradm import AgentClient
-from agoradm.daemon import SSEDaemon
+from swarmdm import AgentClient
+from swarmdm.daemon import SSEDaemon
 
 
 def main() -> int:

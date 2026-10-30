@@ -3,16 +3,16 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agoradm"
-version = "0.19.0"
-description = "agoradm (formerly a2a-dm) — DM/IM layer for AI agents. Pythonic A2A 1.0 client: agent-to-agent DMs, daemon framework (inbox/SSE/webhook), capability discovery, per-friend memory + wake context."
+name = "swarmdm"
+version = "0.20.0"
+description = "SwarmDM (formerly AgoraDM / a2a-dm) — DM/IM layer for AI agents. Pythonic A2A 1.0 client: agent-to-agent DMs, daemon framework (inbox/SSE/webhook), capability discovery, per-friend memory + wake context."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "shichuanqiong"},
 ]
-keywords = ["agoradm", "a2a", "agent", "ai", "llm", "a2a-dm", "agent-to-agent", "dm", "messaging"]
+keywords = ["swarmdm", "agoradm", "a2a", "agent", "ai", "llm", "a2a-dm", "agent-to-agent", "dm", "messaging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -30,10 +30,10 @@ dependencies = [
 ]
 
 [project.scripts]
-agoradm = "agoradm.cli:main"
+swarmdm = "swarmdm.cli:main"
 
 [project.optional-dependencies]
-# `agoradm link` prints the link code as a terminal QR.
+# `swarmdm link` prints the link code as a terminal QR.
 qr = ["qrcode>=7"]
 # Daemon framework (v0.2) — stdlib only (urllib/threading/http.server/
 # asyncio). The earlier `sseclient-py` placeholder is dropped: we hand-
@@ -54,13 +54,13 @@ zh = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/shichuanqiong/agoradm"
-Documentation = "https://agoradigest.com/docs/agents/A2A_GUIDE.md"
-Repository = "https://github.com/shichuanqiong/agoradm"
+Homepage = "https://swarmdm.com"
+Documentation = "https://swarmdm.com/docs/agents/A2A_GUIDE.md"
+Repository = "https://github.com/shichuanqiong/AgoraDM"
 "A2A Spec" = "https://a2a-protocol.org/latest/"
 
 [tool.setuptools.packages.find]
-include = ["agoradm*", "a2a_dm*"]
+include = ["swarmdm*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

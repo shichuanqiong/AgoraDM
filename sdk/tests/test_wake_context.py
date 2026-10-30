@@ -20,8 +20,8 @@ import json
 import pytest
 import responses
 
-from agoradm import AgentClient, AgentCard, Friend, WakeContext
-from agoradm.wake_context import _format_system_prompt
+from swarmdm import AgentClient, AgentCard, Friend, WakeContext
+from swarmdm.wake_context import _format_system_prompt
 
 
 # ── Friend.memory roundtrip ─────────────────────────────────────
@@ -87,7 +87,7 @@ def test_friends_update_memory_field_only():
     """memory=... shows up alone in body when nothing else passed."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={"k": "v"})},
         status=200,
     )
@@ -102,7 +102,7 @@ def test_friends_update_memory_with_label():
     """Mixing memory= with other fields — both keys in body."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(label="bd", memory={"x": 1})},
         status=200,
     )
@@ -117,7 +117,7 @@ def test_friends_update_empty_memory_dict_sent():
     """Empty dict is meaningful (clear-all) and must reach the wire."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -132,7 +132,7 @@ def test_friends_update_returns_friend_with_memory():
     """Roundtrip: send memory, server echoes it back, dataclass exposes it."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={"saved": True})},
         status=200,
     )
@@ -389,14 +389,14 @@ def test_context_for_wake_composes_three_sources():
     """Happy path — conversation + friend + client.card all available."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_conv_payload(),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(
             memory={"last_topic": "deployment"},
             note="bestie since 2025",
@@ -435,7 +435,7 @@ def test_context_for_wake_handles_not_friended_partner():
     """404 from /friends/{partner} → empty memory + None note, no raise."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/stranger",
+        "https://api.swarmdm.com/a2a/v1/conversations/stranger",
         json=_conv_payload(
             partner={
                 "bot_id": "stranger",
@@ -448,7 +448,7 @@ def test_context_for_wake_handles_not_friended_partner():
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/stranger",
+        "https://api.swarmdm.com/a2a/v1/friends/stranger",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -464,14 +464,14 @@ def test_context_for_wake_no_card_loaded_me_is_none():
     """Operator hasn't done client.agent_card.discover() — me is None."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_conv_payload(),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -488,14 +488,14 @@ def test_context_for_wake_max_turns_flows_to_conversation():
     """max_turns kwarg becomes the conversation() limit query param."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_conv_payload(),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -536,14 +536,14 @@ def test_context_for_wake_recent_turns_preserve_order_and_fields():
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=multi_msg_payload,
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -563,14 +563,14 @@ def test_context_for_wake_default_max_turns_is_10():
     """Default max_turns kwarg → limit=10 on the wire."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_conv_payload(),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -585,14 +585,14 @@ def test_context_for_wake_card_dict_path_used_when_present():
     back to dict() coercion."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_conv_payload(),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _friend_payload(memory={})},
         status=200,
     )
@@ -610,14 +610,14 @@ def test_context_for_wake_lists_the_owners_phone_tools():
     tool list, so the agent doesn't answer from stale notes."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/hu_1",
+        "https://api.swarmdm.com/a2a/v1/conversations/hu_1",
         json=_conv_payload(partner={"bot_id": "hu_1", "display_name": "水哥", "is_friend": True}),
         status=200,
         match_querystring=False,
     )
-    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/friends/hu_1",
+    responses.add(responses.GET, "https://api.swarmdm.com/a2a/v1/friends/hu_1",
                   json={"detail": {"error": "friend_not_found"}}, status=404)
-    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/agents/me/operators", json={"operators": [
+    responses.add(responses.GET, "https://api.swarmdm.com/a2a/v1/agents/me/operators", json={"operators": [
         {"human_id": "hu_1", "display_name": "水哥", "phone_tools": {"published": True, "tools": [
             {"name": "phone", "description": "Call, FaceTime or text.\nMore.", "parameters": {}, "granted": True},
             {"name": "gmail", "description": "Gmail.", "parameters": {}, "granted": False}]}}]})
@@ -632,9 +632,9 @@ def test_context_for_wake_lists_the_owners_phone_tools():
 
 @responses.activate
 def test_context_for_wake_skips_phone_tools_for_agents():
-    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+    responses.add(responses.GET, "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
                   json=_conv_payload(), status=200, match_querystring=False)
-    responses.add(responses.GET, "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+    responses.add(responses.GET, "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
                   json={"detail": {"error": "friend_not_found"}}, status=404)
     ctx = AgentClient(token="bt_test", bot_id="me").dm.context_for_wake("bestiedog")
     assert ctx.partner_phone_tools == [] and "phone" not in ctx.system_prompt_suggestion

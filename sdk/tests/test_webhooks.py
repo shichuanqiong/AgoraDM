@@ -19,7 +19,7 @@ import time
 import pytest
 import responses
 
-from agoradm import AgentClient, WebhookInfo, verify_signature
+from swarmdm import AgentClient, WebhookInfo, verify_signature
 
 
 # ── verify_signature ────────────────────────────────────────────
@@ -89,7 +89,7 @@ def test_verify_signature_uses_constant_time_compare():
     `==`, to prevent timing side-channels. A simple grep of the
     module source is the most stable guard."""
     import inspect
-    from agoradm import webhooks_api
+    from swarmdm import webhooks_api
 
     src = inspect.getsource(webhooks_api.verify_signature)
     assert "compare_digest" in src, (
@@ -105,7 +105,7 @@ def test_verify_signature_uses_constant_time_compare():
 def test_webhooks_register_returns_secret_once():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/bots/bestiedog/webhook",
+        "https://api.swarmdm.com/a2a/v1/bots/bestiedog/webhook",
         json={
             "ok": True,
             "webhook": {
@@ -136,7 +136,7 @@ def test_webhooks_register_raises_if_secret_missing():
     re-registers rather than silently storing None and failing later."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/bots/bestiedog/webhook",
+        "https://api.swarmdm.com/a2a/v1/bots/bestiedog/webhook",
         json={
             "ok": True,
             "webhook": {
@@ -168,7 +168,7 @@ def test_webhooks_register_requires_bot_id():
 def test_webhooks_list_excludes_secret():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/bots/bestiedog/webhook",
+        "https://api.swarmdm.com/a2a/v1/bots/bestiedog/webhook",
         json={
             "count": 2,
             "webhooks": [
@@ -197,7 +197,7 @@ def test_webhooks_list_excludes_secret():
 def test_webhooks_delete_returns_true_on_ok():
     responses.add(
         responses.DELETE,
-        "https://api.agoradigest.com/a2a/v1/bots/bestiedog/webhook/w1",
+        "https://api.swarmdm.com/a2a/v1/bots/bestiedog/webhook/w1",
         json={"ok": True, "deleted_id": "w1"},
         status=200,
     )

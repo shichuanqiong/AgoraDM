@@ -22,7 +22,7 @@ import os
 import pytest
 import responses
 
-from agoradm import (
+from swarmdm import (
     AgentClient,
     AgoraDigestError,
     AuthError,
@@ -275,7 +275,7 @@ def test_500_maps_to_server_error():
     """The /healthz/rq endpoint exists specifically for diagnosing
     when 500s start happening; the SDK exception is the signal to
     check it."""
-    from agoradm import ServerError
+    from swarmdm import ServerError
 
     body = {"detail": "internal server error"}
     err = AgoraDigestError.from_response(500, body)
@@ -344,7 +344,7 @@ def test_unauthed_call_raises_before_round_trip(monkeypatch):
 def test_dm_send_returns_task_envelope():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={
             "id": "5c72c6f4-aaaa",
             "contextId": "ctx-abc",
@@ -370,7 +370,7 @@ def test_dm_send_short_text_raises_validation():
     """Server returns 400 with malformed-text error; SDK maps it."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={
             "detail": {
                 "error": {
@@ -391,7 +391,7 @@ def test_dm_send_short_text_raises_validation():
 def test_dm_inbox_returns_inbox_view():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/inbox",
+        "https://api.swarmdm.com/a2a/v1/inbox",
         json={
             "count": 2,
             "tasks": [
@@ -422,13 +422,13 @@ def test_dm_ack_returns_envelope_with_state_working():
     # the fallback to the legacy endpoint fires.
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/uuid-1/ack",
+        "https://api.swarmdm.com/a2a/v1/messages/uuid-1/ack",
         json={"detail": "not found"},
         status=404,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/uuid-1/ack",
+        "https://api.swarmdm.com/a2a/v1/tasks/uuid-1/ack",
         json={
             "a2a_task_id": "uuid-1",
             "state": "working",
@@ -448,13 +448,13 @@ def test_dm_ack_on_already_terminal_raises_conflict():
     # v0.2.2 — same fallback pattern. 404 on new endpoint, 409 on legacy.
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/uuid-1/ack",
+        "https://api.swarmdm.com/a2a/v1/messages/uuid-1/ack",
         json={"detail": "not found"},
         status=404,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/uuid-1/ack",
+        "https://api.swarmdm.com/a2a/v1/tasks/uuid-1/ack",
         json={
             "detail": {
                 "error": {
@@ -477,13 +477,13 @@ def test_dm_submit_with_artifacts():
     # v0.2.2 — fallback from new submit to legacy submit endpoint.
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/uuid-1/submit",
+        "https://api.swarmdm.com/a2a/v1/messages/uuid-1/submit",
         json={"detail": "not found"},
         status=404,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/uuid-1/submit",
+        "https://api.swarmdm.com/a2a/v1/tasks/uuid-1/submit",
         json={
             "id": "uuid-1",
             "status": {"state": "completed"},
@@ -514,13 +514,13 @@ def test_dm_submit_payload_includes_metadata():
     # v0.2.2 — fallback: new endpoint 404 → legacy endpoint.
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/u1/submit",
+        "https://api.swarmdm.com/a2a/v1/messages/u1/submit",
         json={"detail": "not found"},
         status=404,
     )
     responses.add_callback(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/u1/submit",
+        "https://api.swarmdm.com/a2a/v1/tasks/u1/submit",
         callback=callback,
     )
     client = AgentClient(token="bt_test")
@@ -539,25 +539,25 @@ def test_dm_reply_combines_ack_and_submit():
     # v0.2.2 — both ack + submit fall back from new to legacy endpoints.
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/u1/ack",
+        "https://api.swarmdm.com/a2a/v1/messages/u1/ack",
         json={"detail": "not found"},
         status=404,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/u1/ack",
+        "https://api.swarmdm.com/a2a/v1/tasks/u1/ack",
         json={"a2a_task_id": "u1", "state": "working", "already_acked": False},
         status=200,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages/u1/submit",
+        "https://api.swarmdm.com/a2a/v1/messages/u1/submit",
         json={"detail": "not found"},
         status=404,
     )
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/tasks/u1/submit",
+        "https://api.swarmdm.com/a2a/v1/tasks/u1/submit",
         json={
             "id": "u1",
             "status": {"state": "completed"},
@@ -577,7 +577,7 @@ def test_dm_reply_combines_ack_and_submit():
 def test_healthz_no_auth_needed():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/healthz",
+        "https://api.swarmdm.com/healthz",
         json={"ok": True, "service": "elvar-api", "version": "0.1"},
         status=200,
     )
@@ -594,7 +594,7 @@ def test_healthz_rq_returns_worker_status():
     SSH."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/healthz/rq",
+        "https://api.swarmdm.com/healthz/rq",
         json={
             "status": "ok",
             "queue": {"name": "default", "depth": 0, "started": 0, "failed": 0, "scheduled": 0},
@@ -639,7 +639,7 @@ def test_from_dict_parses_history_message_for_v02_inbox():
     rather than the v0.1 legacy `message: {...}` shape. Before this
     patch, `task.message` was None for every inbox task — the SDK
     parser only checked `data["message"]`."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {
         "id": "abc-123",
@@ -666,7 +666,7 @@ def test_from_dict_parses_history_message_for_v02_inbox():
 def test_from_dict_legacy_message_shape_still_works():
     """v0.1 `/a2a/v1/bots/{id}/message:send` returns `message: {...}`
     directly. The patch must not break this path."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {
         "id": "def-456",
@@ -685,7 +685,7 @@ def test_from_dict_reply_text_from_history_agent_role():
     """v0.2 completed task carries reply under `history[1]` with
     role='agent'. `reply_text` must surface it even when `artifacts`
     is empty."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {
         "id": "ghi-789",
@@ -703,7 +703,7 @@ def test_from_dict_reply_text_from_history_agent_role():
 def test_from_dict_history_no_user_role_falls_back_to_first_with_parts():
     """Defensive — some servers omit role tagging. The parser falls
     back to the first history entry that has a parts array."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {
         "id": "jkl-012",
@@ -720,7 +720,7 @@ def test_from_dict_history_no_user_role_falls_back_to_first_with_parts():
 def test_from_dict_no_message_no_history_returns_none():
     """When neither shape is present, .message stays None — caller
     can then test `if task.message:` defensively."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {"id": "mno-345", "status": {"state": "submitted"}}
     t = TaskEnvelope.from_dict(envelope)
@@ -734,7 +734,7 @@ def test_envelope_exposes_delivered_at_and_replied_at():
     """v0.2.2 — receiver-side timestamps from x-agoradigest. Lets the
     sender check `task.delivered_at` (acked) and `task.replied_at`
     (submitted) — Tyler's "bidirectional confirm" requirement."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     envelope = {
         "id": "abc-123",
@@ -761,7 +761,7 @@ def test_envelope_is_delivered_falls_back_to_state():
     """is_delivered should be True if EITHER delivered_at is set OR
     state has progressed past submitted. Handles the legacy endpoint
     that doesn't surface ack_at."""
-    from agoradm.models import TaskEnvelope
+    from swarmdm.models import TaskEnvelope
 
     # Legacy shape — no ack_at, but state=working
     envelope_legacy = {"id": "x", "status": {"state": "working"}}
@@ -775,7 +775,7 @@ def test_envelope_is_delivered_falls_back_to_state():
 def test_agent_client_accepts_bot_id_param():
     """v0.2.2 — AgentClient(bot_id=...) needed by WebhookDaemon and
     A2ADaemon. Fixes the AttributeError in laobaigan's field test."""
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     c = AgentClient(token="bt_test", bot_id="bestiedog")
     assert c.bot_id == "bestiedog"
@@ -795,7 +795,7 @@ def test_dm_send_and_wait_polls_until_completed():
     # 1. send() → new endpoint returns submitted state
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={
             "id": "task-xyz",
             "status": {"state": "submitted"},
@@ -806,7 +806,7 @@ def test_dm_send_and_wait_polls_until_completed():
     # 2. get_task() first poll → still working
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/messages/task-xyz",
+        "https://api.swarmdm.com/a2a/v1/messages/task-xyz",
         json={
             "id": "task-xyz",
             "status": {"state": "working"},
@@ -820,7 +820,7 @@ def test_dm_send_and_wait_polls_until_completed():
     # 3. get_task() second poll → completed with reply
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/messages/task-xyz",
+        "https://api.swarmdm.com/a2a/v1/messages/task-xyz",
         json={
             "id": "task-xyz",
             "status": {"state": "completed"},
@@ -859,14 +859,14 @@ def test_dm_send_retries_on_rate_limit():
     # First attempt → 429
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={"detail": {"error": "rate limit", "hint": "retry"}},
         status=429,
     )
     # Second attempt → 200
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={
             "id": "abc-123",
             "status": {"state": "submitted"},
@@ -889,7 +889,7 @@ def test_dm_send_does_not_retry_validation_error():
     must NOT trigger retries. Otherwise we'd spam the API."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={"detail": {"error": "bad request"}},
         status=400,
     )
@@ -910,13 +910,13 @@ def test_dm_send_exhausts_retries_then_raises():
     for _ in range(3):
         responses.add(
             responses.POST,
-            "https://api.agoradigest.com/a2a/v1/messages",
+            "https://api.swarmdm.com/a2a/v1/messages",
             json={"detail": {"error": "service unavailable"}},
             status=503,
         )
 
     client = AgentClient(token="bt_test")
-    from agoradm.exceptions import ServerError
+    from swarmdm.exceptions import ServerError
     with pytest.raises(ServerError):
         client.dm.send(
             target="x", text="hi",
@@ -932,11 +932,11 @@ def test_dm_send_exhausts_retries_then_raises():
 def test_dm_send_auto_embeds_sender_card_when_set():
     """v0.3.0 — when client.card is set, dm.send() snapshots it into
     metadata.sender_card so the receiver gets the card inline."""
-    from agoradm import AgentCard
-    from agoradm.agent_card import AgentEndpoint
+    from swarmdm import AgentCard
+    from swarmdm.agent_card import AgentEndpoint
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={"id": "uuid-1", "status": {"state": "submitted"}},
         status=200,
     )
@@ -949,7 +949,7 @@ def test_dm_send_auto_embeds_sender_card_when_set():
         endpoints=[
             AgentEndpoint(
                 kind="dm",
-                url="https://api.agoradigest.com/a2a/v1/bots/bestiedog/message:send",
+                url="https://api.swarmdm.com/a2a/v1/bots/bestiedog/message:send",
             )
         ],
     )
@@ -967,11 +967,11 @@ def test_dm_send_auto_embeds_sender_card_when_set():
 @responses.activate
 def test_dm_send_skips_card_when_embed_card_false():
     """embed_card=False is the explicit opt-out."""
-    from agoradm import AgentCard
-    from agoradm.agent_card import AgentEndpoint
+    from swarmdm import AgentCard
+    from swarmdm.agent_card import AgentEndpoint
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={"id": "uuid-2", "status": {"state": "submitted"}},
         status=200,
     )
@@ -984,7 +984,7 @@ def test_dm_send_skips_card_when_embed_card_false():
         endpoints=[
             AgentEndpoint(
                 kind="dm",
-                url="https://api.agoradigest.com/a2a/v1/bots/bestiedog/message:send",
+                url="https://api.swarmdm.com/a2a/v1/bots/bestiedog/message:send",
             )
         ],
     )
@@ -1003,7 +1003,7 @@ def test_dm_send_no_card_when_client_card_unset():
     """No card set → nothing embedded; no errors."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/messages",
+        "https://api.swarmdm.com/a2a/v1/messages",
         json={"id": "uuid-3", "status": {"state": "submitted"}},
         status=200,
     )
@@ -1027,7 +1027,7 @@ def test_task_envelope_parses_sender_card_from_x_agoradigest():
             "sender_card": {
                 "name": "bestiedog",
                 "description": "engineering agent",
-                "url": "https://api.agoradigest.com/a2a/v1/bots/bestiedog/message:send",
+                "url": "https://api.swarmdm.com/a2a/v1/bots/bestiedog/message:send",
                 "protocolVersion": "1.0",
             },
         },

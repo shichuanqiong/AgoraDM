@@ -1,12 +1,14 @@
 name: release
 
 # Tag conventions (monorepo):
-#   sdk-v*.*.*     -> build & publish sdk/     (PyPI package: a2a-dm)
-#   mcp-v*.*.*     -> build & publish mcp/     (PyPI package: a2a-dm-mcp)
+#   swarmdm-v*.*.*     -> sdk/  (PyPI: swarmdm — the SDK, renamed from agoradm 2026-10-30)
+#   swarmdm-mcp-v*.*.* -> mcp/  (PyPI: swarmdm-mcp — renamed from agoradm-mcp)
+#   agoradm-v*.*.*     -> shims/agoradm/     (final agoradm: depends on swarmdm, import alias)
+#   agoradm-mcp-v*.*.* -> shims/agoradm-mcp/ (final agoradm-mcp: depends on swarmdm-mcp)
+#   sdk-v*.*.* / mcp-v*.*.* -> sdk/ / mcp/ (old tags, kept for history)
 #   hermes-v*.*.*  -> build & publish hermes/  (PyPI package: a2a-dm-hermes)
 #   uhp-v*.*.*     -> build & publish harnessrouter/ (PyPI package: agoradm-uhp)
-#   swarmdm-v*.*.*     -> placeholders/swarmdm/     (PyPI: swarmdm, name reserved 2026-10-29)
-#   swarmdm-mcp-v*.*.* -> placeholders/swarmdm-mcp/ (PyPI: swarmdm-mcp)
+#   (placeholders/ held the 0.0.1 name reservations of 2026-10-29)
 #
 # One-time PyPI setup per package:
 #   https://pypi.org/manage/project/<package>/settings/publishing/
@@ -24,6 +26,8 @@ on:
       - "uhp-v*.*.*"
       - "swarmdm-v*.*.*"
       - "swarmdm-mcp-v*.*.*"
+      - "agoradm-v*.*.*"
+      - "agoradm-mcp-v*.*.*"
 
 jobs:
   release:
@@ -45,9 +49,13 @@ jobs:
           elif [[ "${GITHUB_REF_NAME}" == uhp-v* ]]; then
             echo "dir=harnessrouter" >> "$GITHUB_OUTPUT"
           elif [[ "${GITHUB_REF_NAME}" == swarmdm-mcp-v* ]]; then
-            echo "dir=placeholders/swarmdm-mcp" >> "$GITHUB_OUTPUT"
+            echo "dir=mcp" >> "$GITHUB_OUTPUT"
           elif [[ "${GITHUB_REF_NAME}" == swarmdm-v* ]]; then
-            echo "dir=placeholders/swarmdm" >> "$GITHUB_OUTPUT"
+            echo "dir=sdk" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_NAME}" == agoradm-mcp-v* ]]; then
+            echo "dir=shims/agoradm-mcp" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_NAME}" == agoradm-v* ]]; then
+            echo "dir=shims/agoradm" >> "$GITHUB_OUTPUT"
           else
             echo "dir=mcp" >> "$GITHUB_OUTPUT"
           fi

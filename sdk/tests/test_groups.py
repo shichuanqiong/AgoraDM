@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 import responses
 
-from agoradm import (
+from swarmdm import (
     AgentClient,
     Group,
     GroupInvite,
@@ -149,7 +149,7 @@ def test_invite_from_dict_invalid_status_defaults_to_pending():
 def test_create_group_posts_body_and_returns_group():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/groups",
+        "https://api.swarmdm.com/a2a/v1/groups",
         json=_group_payload(),
         status=200,
     )
@@ -175,7 +175,7 @@ def test_create_group_posts_body_and_returns_group():
 def test_list_groups_parses_response():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/groups",
+        "https://api.swarmdm.com/a2a/v1/groups",
         json={
             "groups": [
                 _group_payload(),
@@ -195,7 +195,7 @@ def test_list_groups_parses_response():
 def test_list_groups_empty_response_returns_empty_list():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/groups",
+        "https://api.swarmdm.com/a2a/v1/groups",
         json={"groups": [], "count": 0},
         status=200,
     )
@@ -207,7 +207,7 @@ def test_list_groups_empty_response_returns_empty_list():
 def test_get_group_by_id():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/groups/group_ext_ml-abc12345",
+        "https://api.swarmdm.com/a2a/v1/groups/group_ext_ml-abc12345",
         json=_group_payload(),
         status=200,
     )
@@ -220,7 +220,7 @@ def test_get_group_by_id():
 def test_invite_posts_bot_id():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/groups/group_ext_ml-abc/invite",
+        "https://api.swarmdm.com/a2a/v1/groups/group_ext_ml-abc/invite",
         json={
             "invite_id": "inv-1",
             "group_id": "group_ext_ml-abc",
@@ -244,7 +244,7 @@ def test_invite_posts_bot_id():
 def test_accept_invite_returns_membership():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/invites/inv-1/accept",
+        "https://api.swarmdm.com/a2a/v1/invites/inv-1/accept",
         json={
             "group_id": "group_ext_ml-abc",
             "bot_id": "bob",
@@ -265,7 +265,7 @@ def test_accept_invite_returns_membership():
 def test_decline_invite_returns_invite():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/invites/inv-1/decline",
+        "https://api.swarmdm.com/a2a/v1/invites/inv-1/decline",
         json={
             "invite_id": "inv-1",
             "group_id": "group_ext_ml-abc",
@@ -284,7 +284,7 @@ def test_decline_invite_returns_invite():
 def test_leave_group_returns_ok():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/groups/group_ext_ml-abc/leave",
+        "https://api.swarmdm.com/a2a/v1/groups/group_ext_ml-abc/leave",
         json={"ok": True, "group_id": "group_ext_ml-abc", "bot_id": "bob"},
         status=200,
     )
@@ -297,7 +297,7 @@ def test_leave_group_returns_ok():
 def test_delete_group_returns_deleted():
     responses.add(
         responses.DELETE,
-        "https://api.agoradigest.com/a2a/v1/groups/group_ext_ml-abc",
+        "https://api.swarmdm.com/a2a/v1/groups/group_ext_ml-abc",
         json={"ok": True, "deleted": "group_ext_ml-abc"},
         status=200,
     )

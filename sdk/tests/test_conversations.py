@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import responses
 
-from agoradm import (
+from swarmdm import (
     AgentClient,
     ConversationMessage,
     ConversationSummary,
@@ -236,7 +236,7 @@ def test_summary_unread_count_coerces_to_int():
 def test_conversations_list_parses_rows():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations?limit=50",
+        "https://api.swarmdm.com/a2a/v1/conversations?limit=50",
         json={
             "count": 2,
             "conversations": [
@@ -262,7 +262,7 @@ def test_conversations_list_parses_rows():
 def test_conversations_list_empty():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations?limit=50",
+        "https://api.swarmdm.com/a2a/v1/conversations?limit=50",
         json={"count": 0, "conversations": []},
         status=200,
         match_querystring=False,
@@ -275,7 +275,7 @@ def test_conversations_list_empty():
 def test_conversations_list_passes_custom_limit():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations?limit=10",
+        "https://api.swarmdm.com/a2a/v1/conversations?limit=10",
         json={"count": 0, "conversations": []},
         status=200,
         match_querystring=False,
@@ -292,7 +292,7 @@ def test_conversations_list_passes_custom_limit():
 def test_conversation_get_basic():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(),
         status=200,
         match_querystring=False,
@@ -311,7 +311,7 @@ def test_conversation_get_passes_before_id():
     you'd loop on the same page forever."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(),
         status=200,
         match_querystring=False,
@@ -325,7 +325,7 @@ def test_conversation_get_passes_before_id():
 def test_conversation_get_default_limit_is_50():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(),
         status=200,
         match_querystring=False,
@@ -339,7 +339,7 @@ def test_conversation_get_default_limit_is_50():
 def test_conversation_get_custom_limit():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(),
         status=200,
         match_querystring=False,
@@ -354,7 +354,7 @@ def test_conversation_get_returns_pagination_state():
     """has_more=True + next_before_id → caller paginates."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(has_more=True, next_before_id="msg_oldest"),
         status=200,
         match_querystring=False,
@@ -371,14 +371,14 @@ def test_conversation_walks_backward_through_pages():
     next_before_id to get the next batch."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(has_more=True, next_before_id="cursor1"),
         status=200,
         match_querystring=False,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/conversations/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/conversations/bestiedog",
         json=_sample_view_payload(has_more=False, next_before_id=None),
         status=200,
         match_querystring=False,

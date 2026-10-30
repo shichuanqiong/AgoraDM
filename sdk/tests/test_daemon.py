@@ -33,7 +33,7 @@ import pytest
 
 def test_lru_set_membership_basic():
     """Pre-overflow: add returns True once, then False for duplicates."""
-    from agoradm.daemon._dedup import LRUSet
+    from swarmdm.daemon._dedup import LRUSet
 
     s = LRUSet(max_size=3)
     assert s.add("a") is True
@@ -48,7 +48,7 @@ def test_lru_set_evicts_oldest_on_overflow():
 
     Adding max_size+1 items must drop only the OLDEST item — every
     other item must still be recognised."""
-    from agoradm.daemon._dedup import LRUSet
+    from swarmdm.daemon._dedup import LRUSet
 
     s = LRUSet(max_size=3)
     s.add("a"); s.add("b"); s.add("c")
@@ -63,7 +63,7 @@ def test_lru_set_evicts_oldest_on_overflow():
 
 def test_lru_set_bounded_under_load():
     """Push 10x max_size — size stays ≤ max_size + 1 always."""
-    from agoradm.daemon._dedup import LRUSet
+    from swarmdm.daemon._dedup import LRUSet
 
     s = LRUSet(max_size=100)
     for i in range(1000):
@@ -78,7 +78,7 @@ def test_lru_set_bounded_under_load():
 
 
 def test_lru_set_rejects_zero_max_size():
-    from agoradm.daemon._dedup import LRUSet
+    from swarmdm.daemon._dedup import LRUSet
 
     with pytest.raises(ValueError):
         LRUSet(max_size=0)
@@ -91,8 +91,8 @@ def test_a2a_daemon_inherits_base_daemon():
     """Bug 4: A2ADaemon must extend _BaseDaemon (shared lifecycle,
     stats slot, context manager). The v0.2 draft was a standalone
     class with parallel start/stop machinery."""
-    from agoradm.daemon._base import _BaseDaemon
-    from agoradm.daemon.advanced import A2ADaemon
+    from swarmdm.daemon._base import _BaseDaemon
+    from swarmdm.daemon.advanced import A2ADaemon
 
     assert issubclass(A2ADaemon, _BaseDaemon), (
         "A2ADaemon must inherit _BaseDaemon for shared interface"
@@ -104,7 +104,7 @@ def test_a2a_daemon_rejects_empty_token():
     shipped with the operator's real bot token as the os.environ
     default — a single config slip would have exfiltrated the live
     token. No defaults, no fallback."""
-    from agoradm.daemon.advanced import A2ADaemon
+    from swarmdm.daemon.advanced import A2ADaemon
 
     with pytest.raises(ValueError, match="token"):
         A2ADaemon(token="", bot_id="x")
@@ -122,7 +122,7 @@ def test_a2a_daemon_heartbeat_does_not_send_dm(monkeypatch):
           A2ADaemon source
       (b) construction works without any dm.send mock
     """
-    from agoradm.daemon.advanced import A2ADaemon
+    from swarmdm.daemon.advanced import A2ADaemon
 
     # (a) Source check of `_heartbeat_bumper` specifically — the
     # whole-module grep would false-positive on the explanatory
@@ -179,7 +179,7 @@ def test_a2a_daemon_heartbeat_does_not_send_dm(monkeypatch):
 def test_a2a_daemon_status_snapshot_shape():
     """A2ADaemon.status returns the dict shape /healthz endpoints
     rely on. Pin the keys so a refactor doesn't silently rename them."""
-    from agoradm.daemon.advanced import A2ADaemon
+    from swarmdm.daemon.advanced import A2ADaemon
 
     d = A2ADaemon(
         token="bt_fake_test_token",
@@ -203,7 +203,7 @@ def test_sse_daemon_has_real_sse_path():
     v0.2 fix: ``_connect_and_stream`` method that actually opens
     a urllib SSE GET. Verify by class introspection (a unit test
     that opens a real socket would be flaky in CI)."""
-    from agoradm.daemon import SSEDaemon
+    from swarmdm.daemon import SSEDaemon
 
     methods = set(dir(SSEDaemon))
     assert "_connect_and_stream" in methods, (
@@ -220,8 +220,8 @@ def test_sse_daemon_uses_since_cursor():
     """T2 — SSE resume cursor. Build URL must include ``since=N``
     after the cursor advances. Steals the v6 reference daemon's
     pattern so a reconnect mid-stream doesn't drop events."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon import SSEDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon import SSEDaemon
 
     client = AgentClient(token="bt_x", api_base="https://api.example.com")
     d = SSEDaemon(client, bot_id="testbot")
@@ -240,7 +240,7 @@ def test_sse_daemon_uses_since_cursor():
 
 
 def test_extract_pd_from_tags():
-    from agoradm.daemon.advanced import extract_pd
+    from swarmdm.daemon.advanced import extract_pd
 
     task = SimpleNamespace(
         x_agoradigest={"tags": ["a2a-ping-pong", "pd=3"]},
@@ -250,7 +250,7 @@ def test_extract_pd_from_tags():
 
 
 def test_extract_pd_from_metadata_fallback():
-    from agoradm.daemon.advanced import extract_pd
+    from swarmdm.daemon.advanced import extract_pd
 
     task = SimpleNamespace(
         x_agoradigest=None,
@@ -261,14 +261,14 @@ def test_extract_pd_from_metadata_fallback():
 
 def test_extract_pd_absent_returns_minus_one():
     """Non-ping-pong DMs return -1 so handlers can branch."""
-    from agoradm.daemon.advanced import extract_pd
+    from swarmdm.daemon.advanced import extract_pd
 
     task = SimpleNamespace(x_agoradigest={}, metadata={})
     assert extract_pd(task) == -1
 
 
 def test_should_continue_terminator():
-    from agoradm.daemon.advanced import next_round, should_continue
+    from swarmdm.daemon.advanced import next_round, should_continue
 
     assert should_continue(0, max_rounds=5) is True
     assert should_continue(4, max_rounds=5) is True
@@ -283,7 +283,7 @@ def test_should_continue_terminator():
 def test_daemon_from_config_rejects_missing_token():
     """Bug 5 again — at the multi-bot factory layer. Missing token
     must raise; no fallback to a shared default."""
-    from agoradm.daemon.advanced import daemon_from_config
+    from swarmdm.daemon.advanced import daemon_from_config
 
     config = {"bots": {"bestiedog": {}}}  # no token
     with pytest.raises(ValueError, match="token"):
@@ -291,7 +291,7 @@ def test_daemon_from_config_rejects_missing_token():
 
 
 def test_daemon_from_config_builds_one_per_bot():
-    from agoradm.daemon.advanced import A2ADaemon, daemon_from_config
+    from swarmdm.daemon.advanced import A2ADaemon, daemon_from_config
 
     config = {
         "bots": {
@@ -312,8 +312,8 @@ def test_daemon_from_config_builds_one_per_bot():
 
 def test_base_daemon_context_manager():
     """`with daemon:` must call start on enter, stop on exit."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
 
     class _TestDaemon(_BaseDaemon):
         ran = False
@@ -334,8 +334,8 @@ def test_base_daemon_context_manager():
 
 
 def test_base_daemon_on_message_decorator():
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -358,7 +358,7 @@ def test_payload_to_envelope_handles_inline_text_shape():
     (text is a computed property over parts) and TaskEnvelope has no
     `metadata=` field. The v0.2.2 _payload_to_envelope was passing
     both → crash on first SSE event."""
-    from agoradm.daemon.advanced._webhook import _payload_to_envelope
+    from swarmdm.daemon.advanced._webhook import _payload_to_envelope
 
     payload = {
         "task_id": "abc-123",
@@ -382,7 +382,7 @@ def test_payload_to_envelope_handles_inline_text_shape():
 def test_payload_to_envelope_handles_nested_message_shape():
     """A2A 1.0 canonical shape: {message: {role, parts}}. Parts list
     must be forwarded as-is (no text= ctor arg)."""
-    from agoradm.daemon.advanced._webhook import _payload_to_envelope
+    from swarmdm.daemon.advanced._webhook import _payload_to_envelope
 
     payload = {
         "id": "def-456",
@@ -400,7 +400,7 @@ def test_payload_to_envelope_handles_nested_message_shape():
 
 def test_payload_to_envelope_minimal_no_message():
     """Minimal envelope — no text content. Must not crash."""
-    from agoradm.daemon.advanced._webhook import _payload_to_envelope
+    from swarmdm.daemon.advanced._webhook import _payload_to_envelope
 
     env = _payload_to_envelope({"id": "x"}, default_bot_id="")
     assert env is not None
@@ -413,8 +413,8 @@ def test_sse_bridge_accepts_optional_client():
     """v0.2.3 — SSEBridge takes optional client= for inbox lookups
     on event arrival. When omitted, an AgentClient is auto-constructed
     from token + bot_id."""
-    from agoradm import AgentClient
-    from agoradm.daemon.advanced import SSEBridge
+    from swarmdm import AgentClient
+    from swarmdm.daemon.advanced import SSEBridge
 
     # Explicit client
     c = AgentClient(token="bt_x", bot_id="bestiedog")
@@ -435,7 +435,7 @@ def test_payload_to_envelope_unwraps_sse_event_payload_key():
     `payload.payload`, not `payload.task`. v0.2.3 missed this and
     returned None when SSEBridge handed it a raw SSE event. Fixed
     in T8.1."""
-    from agoradm.daemon.advanced._webhook import _payload_to_envelope
+    from swarmdm.daemon.advanced._webhook import _payload_to_envelope
 
     sse_event = {
         "event": "attempt.requested",
@@ -463,7 +463,7 @@ def test_sse_daemon_inbox_lookup_method_exists():
     `client.dm.get_task` (only the new inbox path).
     """
     import inspect
-    from agoradm.daemon import SSEDaemon
+    from swarmdm.daemon import SSEDaemon
 
     # 0.18.1 — the sweep moved into _sweep_inbox (trailing-edge throttle).
     src = inspect.getsource(SSEDaemon._process_block) + inspect.getsource(SSEDaemon._sweep_inbox)
@@ -496,8 +496,8 @@ def test_inbox_daemon_auto_ack_false_does_not_consume_seen():
     User is expected to call daemon.mark_processed(task.id) explicitly
     when they're done with a task in auto_ack=False mode.
     """
-    from agoradm.client import AgentClient
-    from agoradm.daemon._inbox import InboxDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._inbox import InboxDaemon
 
     d = InboxDaemon(
         AgentClient(token="bt_x"),
@@ -519,8 +519,8 @@ def test_inbox_daemon_auto_ack_false_does_not_consume_seen():
 
 def test_mark_processed_is_idempotent():
     """Calling twice with the same id is a no-op the second time."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._inbox import InboxDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._inbox import InboxDaemon
 
     d = InboxDaemon(AgentClient(token="bt_x"))
     assert d.mark_processed("t1") is True
@@ -531,9 +531,9 @@ def test_mark_processed_present_on_all_daemons():
     """_BaseDaemon.mark_processed is inherited by every daemon class
     so the API surface is consistent. SSEDaemon + A2ADaemon must
     also expose the method."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon import SSEDaemon, InboxDaemon
-    from agoradm.daemon.advanced import A2ADaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon import SSEDaemon, InboxDaemon
+    from swarmdm.daemon.advanced import A2ADaemon
 
     c = AgentClient(token="bt_x")
     for d in [
@@ -551,14 +551,14 @@ def test_mark_processed_present_on_all_daemons():
 
 def test_orchestrated_daemon_rejects_empty_configs():
     """No configs → use A2ADaemon directly."""
-    from agoradm.daemon.advanced import OrchestratedDaemon
+    from swarmdm.daemon.advanced import OrchestratedDaemon
 
     with pytest.raises(ValueError, match="at least one"):
         OrchestratedDaemon([])
 
 
 def test_orchestrated_daemon_rejects_duplicate_bot_id():
-    from agoradm.daemon.advanced import OrchestratedDaemon
+    from swarmdm.daemon.advanced import OrchestratedDaemon
 
     with pytest.raises(ValueError, match="duplicate"):
         OrchestratedDaemon([
@@ -568,7 +568,7 @@ def test_orchestrated_daemon_rejects_duplicate_bot_id():
 
 
 def test_orchestrated_daemon_rejects_missing_required_keys():
-    from agoradm.daemon.advanced import OrchestratedDaemon
+    from swarmdm.daemon.advanced import OrchestratedDaemon
 
     with pytest.raises(ValueError, match="bot_id"):
         OrchestratedDaemon([{"token": "bt_a"}])
@@ -577,7 +577,7 @@ def test_orchestrated_daemon_rejects_missing_required_keys():
 
 
 def test_orchestrated_daemon_construct_bot_ids():
-    from agoradm.daemon.advanced import OrchestratedDaemon
+    from swarmdm.daemon.advanced import OrchestratedDaemon
 
     orch = OrchestratedDaemon([
         {"token": "bt_a", "bot_id": "alice"},
@@ -596,8 +596,8 @@ def test_orchestrated_daemon_construct_bot_ids():
 def test_base_daemon_on_reply_decorator():
     """on_reply mirrors on_message: returns the func, stores it on
     self._reply_handler. Decorator-style usage just works."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -615,8 +615,8 @@ def test_base_daemon_on_reply_decorator():
 def test_base_daemon_reply_handler_starts_unregistered():
     """Default state: no reply handler. SDK drops reply events
     silently — old code that only used on_message is unchanged."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -630,9 +630,9 @@ def test_dispatch_reply_invokes_handler_when_registered():
     """_dispatch_reply fans out to the reply handler and bumps
     messages_processed. Tasks are NOT auto-acked here (replies
     are terminal — receiver already submitted)."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
-    from agoradm.models import TaskEnvelope
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
+    from swarmdm.models import TaskEnvelope
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -662,9 +662,9 @@ def test_dispatch_reply_silent_when_no_handler():
     """Unregistered reply handler → silently True (event consumed,
     no callback). Backward-compat path for daemons that only care
     about incoming DMs."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
-    from agoradm.models import TaskEnvelope
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
+    from swarmdm.models import TaskEnvelope
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -687,9 +687,9 @@ def test_dispatch_reply_silent_when_no_handler():
 def test_dispatch_reply_handler_exception_does_not_propagate():
     """If the user's reply handler raises, the daemon logs and
     bumps the error counter — must NOT kill the SSE thread."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._base import _BaseDaemon
-    from agoradm.models import TaskEnvelope
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._base import _BaseDaemon
+    from swarmdm.models import TaskEnvelope
 
     class _Stub(_BaseDaemon):
         def _run_loop(self) -> None:
@@ -720,8 +720,8 @@ def test_sse_handle_reply_event_drops_missing_task_id():
     payloads always include task_id (set in
     routes/agent_messages.submit_message), but the SDK doesn't
     trust the wire format unilaterally."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._sse import SSEDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._sse import SSEDaemon
 
     daemon = SSEDaemon(AgentClient(token="bt_x"), bot_id="me")
     invocations = []
@@ -744,8 +744,8 @@ def test_sse_handle_reply_event_dedups_via_seen_set():
     """If the same task_id arrives twice (SSE replay), the second
     one is short-circuited via the shared `_seen` LRU before any
     network call."""
-    from agoradm.client import AgentClient
-    from agoradm.daemon._sse import SSEDaemon
+    from swarmdm.client import AgentClient
+    from swarmdm.daemon._sse import SSEDaemon
 
     daemon = SSEDaemon(AgentClient(token="bt_x"), bot_id="me")
     daemon._seen.add("task-already-seen")
@@ -770,8 +770,8 @@ def test_sse_wake_inside_throttle_window_is_not_lost(monkeypatch):
     previous inbox sweep schedules a sweep for when the window ends. It
     used to be dropped, so the DM waited for the 30 s fallback poll."""
     import time as _time
-    from agoradm import AgentClient
-    from agoradm.daemon import SSEDaemon
+    from swarmdm import AgentClient
+    from swarmdm.daemon import SSEDaemon
 
     d = SSEDaemon(AgentClient(token="bt_test", api_base="https://api.test"), handler=lambda t, dd: None)
     sweeps = []
@@ -789,7 +789,7 @@ def test_sse_reader_does_not_wait_for_a_full_buffer():
     """0.18.1 — read1, not read(4096): a chunked stream's read(n) blocks
     until n bytes arrive, holding events behind ~8-byte heartbeats."""
     import inspect
-    from agoradm.daemon import SSEDaemon
+    from swarmdm.daemon import SSEDaemon
 
     src = inspect.getsource(SSEDaemon._connect_and_stream)
     assert "resp.read1(" in src and "resp.read(4096)" not in src
@@ -798,7 +798,7 @@ def test_sse_reader_does_not_wait_for_a_full_buffer():
 def test_inbox_long_poll_sends_wait_and_after_with_a_longer_timeout():
     """0.19 fast lane — dm.inbox(wait=, after=) long-polls the v0.2 inbox only."""
     import responses as _r
-    from agoradm import AgentClient
+    from swarmdm import AgentClient
 
     with _r.RequestsMock() as rs:
         rs.add(_r.GET, "https://api.test/a2a/v1/messages/inbox",
@@ -815,7 +815,7 @@ def test_inbox_daemon_detects_long_poll_support():
     interval polling (no tight loop against old servers)."""
     import threading as _t
     from unittest.mock import MagicMock
-    from agoradm.daemon import InboxDaemon
+    from swarmdm.daemon import InboxDaemon
 
     for supports in (True, False):
         client = MagicMock()

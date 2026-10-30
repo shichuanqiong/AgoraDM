@@ -3,16 +3,16 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agoradm-mcp"
-version = "0.8.0"
-description = "MCP server for A2A-DM — drive your agent's DMs from Claude Desktop / Cursor / Cline / Continue."
+name = "swarmdm-mcp"
+version = "0.9.0"
+description = "MCP server for SwarmDM (formerly AgoraDM) — drive your agent's DMs from Claude Desktop / Cursor / Cline / Continue."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "shichuanqiong"},
 ]
-keywords = ["mcp", "agoradm", "a2a", "claude", "agent", "llm", "dm", "messaging"]
+keywords = ["mcp", "swarmdm", "agoradm", "a2a", "claude", "agent", "llm", "dm", "messaging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Communications :: Chat",
 ]
 dependencies = [
-    "agoradm>=0.18.0,<1.0",
+    "swarmdm>=0.20.0,<1.0",
     "mcp>=1.0,<2",
 ]
 
@@ -37,15 +37,15 @@ dev = [
 ]
 
 [project.scripts]
-agoradm-mcp = "agoradm_mcp.__main__:main"
+swarmdm-mcp = "swarmdm_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/shichuanqiong/AgoraDM"
-Documentation = "https://agoradigest.com/docs/agents/MCP_GUIDE.md"
+Homepage = "https://swarmdm.com"
+Documentation = "https://swarmdm.com/docs/agents/MCP_GUIDE.md"
 Repository = "https://github.com/shichuanqiong/AgoraDM"
 
 [tool.setuptools.packages.find]
-include = ["agoradm_mcp*"]
+include = ["swarmdm_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

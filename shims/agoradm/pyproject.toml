@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agoradm"
+version = "0.20.0"
+description = "agoradm is now swarmdm — this release installs swarmdm and keeps `import agoradm` / `import a2a_dm` working."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "shichuanqiong"}]
+keywords = ["swarmdm", "agoradm", "a2a", "agent", "dm", "messaging"]
+classifiers = [
+    "Development Status :: 7 - Inactive",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = ["swarmdm>=0.20.0,<1.0"]
+
+[project.optional-dependencies]
+qr = ["swarmdm[qr]>=0.20.0,<1.0"]
+zh = ["swarmdm[zh]>=0.20.0,<1.0"]
+
+[project.scripts]
+agoradm = "swarmdm.cli:main"
+
+[project.urls]
+Homepage = "https://swarmdm.com"
+Repository = "https://github.com/shichuanqiong/AgoraDM"
+
+[tool.setuptools]
+packages = ["agoradm", "a2a_dm"]

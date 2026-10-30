@@ -7,7 +7,7 @@ import json
 import pytest
 import responses
 
-from agoradm import AgentClient
+from swarmdm import AgentClient
 
 API = "https://api.test"
 OPS = {"operators": [{"human_id": "hu_1", "display_name": "水哥", "permissions": ["phone.memo"],
@@ -66,7 +66,7 @@ def test_call_returns_pending_when_the_phone_is_slow():
 @responses.activate
 def test_unlinked_agent_gets_a_clear_error():
     responses.add(responses.GET, f"{API}/a2a/v1/agents/me/operators", json={"operators": []})
-    with pytest.raises(ValueError, match="agoradm link"):
+    with pytest.raises(ValueError, match="swarmdm link"):
         _client().phone.tools()
 
 

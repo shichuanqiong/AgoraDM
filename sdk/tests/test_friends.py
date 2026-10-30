@@ -16,8 +16,8 @@ from __future__ import annotations
 import pytest
 import responses
 
-from agoradm import AgentClient, Friend
-from agoradm.exceptions import ConflictError, NotFoundError, ValidationError
+from swarmdm import AgentClient, Friend
+from swarmdm.exceptions import ConflictError, NotFoundError, ValidationError
 
 
 # ── Friend dataclass ────────────────────────────────────────────
@@ -105,7 +105,7 @@ def test_friend_display_name_final_fallback_to_bot_id():
 def test_friends_list_parses_rows():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends?limit=200",
+        "https://api.swarmdm.com/a2a/v1/friends?limit=200",
         json={
             "count": 2,
             "friends": [
@@ -128,7 +128,7 @@ def test_friends_list_empty():
     """Empty server response → empty list (not an error)."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends?limit=200",
+        "https://api.swarmdm.com/a2a/v1/friends?limit=200",
         json={"count": 0, "friends": []},
         status=200,
         match_querystring=False,
@@ -142,7 +142,7 @@ def test_friends_list_custom_limit():
     """`limit=50` flows through to the URL query."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends?limit=50",
+        "https://api.swarmdm.com/a2a/v1/friends?limit=50",
         json={"count": 0, "friends": []},
         status=200,
         match_querystring=False,
@@ -160,7 +160,7 @@ def test_friends_list_custom_limit():
 def test_friends_search_passes_query_param():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/search",
+        "https://api.swarmdm.com/a2a/v1/friends/search",
         json={
             "count": 1,
             "friends": [_sample_friend_payload(tags=["docker", "railway"])],
@@ -182,7 +182,7 @@ def test_friends_search_url_encodes_special_chars():
     """Search terms with spaces / unicode must be properly encoded."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/search",
+        "https://api.swarmdm.com/a2a/v1/friends/search",
         json={"count": 0, "friends": [], "query": "hong kong"},
         status=200,
         match_querystring=False,
@@ -200,7 +200,7 @@ def test_friends_search_url_encodes_special_chars():
 def test_friends_get_returns_friend():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _sample_friend_payload()},
         status=200,
     )
@@ -216,7 +216,7 @@ def test_friends_get_returns_none_on_404():
     one-liner and "do I have X friended?" common case stays clean."""
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/stranger",
+        "https://api.swarmdm.com/a2a/v1/friends/stranger",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -228,13 +228,13 @@ def test_friends_get_returns_none_on_404():
 def test_friends_has_uses_get_under_the_hood():
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _sample_friend_payload()},
         status=200,
     )
     responses.add(
         responses.GET,
-        "https://api.agoradigest.com/a2a/v1/friends/stranger",
+        "https://api.swarmdm.com/a2a/v1/friends/stranger",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -251,7 +251,7 @@ def test_friends_add_minimal():
     """Just a bot_id — everything else optional."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/friends",
+        "https://api.swarmdm.com/a2a/v1/friends",
         json={"friend": _sample_friend_payload(), "created": True},
         status=200,
     )
@@ -268,7 +268,7 @@ def test_friends_add_minimal():
 def test_friends_add_with_full_payload():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/friends",
+        "https://api.swarmdm.com/a2a/v1/friends",
         json={"friend": _sample_friend_payload(), "created": True},
         status=200,
     )
@@ -299,7 +299,7 @@ def test_friends_add_404_raises_not_found():
     """Adding a non-existent bot → NotFoundError (no silent map)."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/friends",
+        "https://api.swarmdm.com/a2a/v1/friends",
         json={"detail": {"error": "friend_bot_not_found"}},
         status=404,
     )
@@ -313,7 +313,7 @@ def test_friends_add_409_raises_conflict():
     """Hitting the per-owner cap → ConflictError."""
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/friends",
+        "https://api.swarmdm.com/a2a/v1/friends",
         json={
             "detail": {
                 "error": "friend_cap_reached",
@@ -331,7 +331,7 @@ def test_friends_add_409_raises_conflict():
 def test_friends_add_400_raises_validation():
     responses.add(
         responses.POST,
-        "https://api.agoradigest.com/a2a/v1/friends",
+        "https://api.swarmdm.com/a2a/v1/friends",
         json={"detail": {"error": "cannot_friend_self"}},
         status=400,
     )
@@ -349,7 +349,7 @@ def test_friends_update_only_sends_supplied_fields():
     PATCH semantics depend on this for "leave field alone"."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _sample_friend_payload(label="renamed")},
         status=200,
     )
@@ -364,7 +364,7 @@ def test_friends_update_only_sends_supplied_fields():
 def test_friends_update_refresh_card_flag():
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _sample_friend_payload()},
         status=200,
     )
@@ -381,7 +381,7 @@ def test_friends_update_empty_call_is_valid():
     pinging the row to touch updated_at). Body is empty dict."""
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"friend": _sample_friend_payload()},
         status=200,
     )
@@ -396,7 +396,7 @@ def test_friends_update_empty_call_is_valid():
 def test_friends_update_404_raises():
     responses.add(
         responses.PATCH,
-        "https://api.agoradigest.com/a2a/v1/friends/ghost",
+        "https://api.swarmdm.com/a2a/v1/friends/ghost",
         json={"detail": {"error": "friend_not_found"}},
         status=404,
     )
@@ -412,7 +412,7 @@ def test_friends_update_404_raises():
 def test_friends_remove_returns_true_on_actual_delete():
     responses.add(
         responses.DELETE,
-        "https://api.agoradigest.com/a2a/v1/friends/bestiedog",
+        "https://api.swarmdm.com/a2a/v1/friends/bestiedog",
         json={"deleted": True, "friend_bot_id": "bestiedog"},
         status=200,
     )
@@ -427,7 +427,7 @@ def test_friends_remove_returns_false_on_idempotent_noop():
     skip "did I really delete something?" log lines."""
     responses.add(
         responses.DELETE,
-        "https://api.agoradigest.com/a2a/v1/friends/ghost",
+        "https://api.swarmdm.com/a2a/v1/friends/ghost",
         json={"deleted": False, "friend_bot_id": "ghost"},
         status=200,
     )
