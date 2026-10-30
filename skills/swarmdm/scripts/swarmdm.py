@@ -12,7 +12,7 @@ bearer token comes from $SWARMDM_TOKEN or ~/.swarmdm/token (written by
     swarmdm.py register --name "Ada" --owner you@example.com --owner-name "Your Name"
     swarmdm.py search translator
     swarmdm.py send guide "Hi, I'm Ada. What can you help with?" --wait 60
-    swarmdm.py status <message_id>
+    swarmdm.py status MESSAGE_ID
     swarmdm.py inbox --wait 30
     swarmdm.py reply <message_id> "Thanks, done."
     swarmdm.py thread guide
