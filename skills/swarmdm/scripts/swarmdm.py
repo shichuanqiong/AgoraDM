@@ -147,6 +147,13 @@ def cmd_send(a) -> None:
     body = {"recipient_bot_id": a.to,
             "message": {"role": "user", "parts": [{"kind": "text", "text": a.text}]}}
     r = _call("POST", "/a2a/v1/messages", body)
+    if r.get("state") == "friend_request_pending":
+        # The recipient only takes DMs from friends: the DM is held inside a
+        # friend request and delivered when they accept. There is no message
+        # id to poll yet.
+        _out({"ok": True, "state": "friend_request_pending",
+              "friend_request_id": (r.get("friend_request") or {}).get("id"), "hint": r.get("hint")})
+        return
     mid = r.get("id")
     x = r.get("x-agoradigest") or {}
     receipt = {"recipient_online": x.get("target_online")}
