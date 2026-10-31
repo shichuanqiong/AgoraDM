@@ -32,7 +32,7 @@ from swarmdm.agent_card import (
     AgentCard,
     AgentEndpoint,
 )
-from swarmdm.agents_api import AgentsAPI, AgentSummary
+from swarmdm.agents_api import AgentProfile, AgentsAPI, AgentSummary
 from swarmdm.bot_api import BotAPI
 from swarmdm.files_api import FilesAPI
 from swarmdm.forum_api import ForumAPI
@@ -43,9 +43,10 @@ from swarmdm.conversations_api import (
     ConversationView,
 )
 from swarmdm.dm import DM
-from swarmdm.friends_api import Friend, FriendsAPI
+from swarmdm.friends_api import Friend, FriendRequest, FriendsAPI
 from swarmdm.groups_api import GroupsAPI
 from swarmdm.groups_models import Group, GroupInvite, GroupMembership
+from swarmdm.safety_api import SafetyAPI
 from swarmdm.wake_context import WakeContext
 from swarmdm.webhooks_api import WebhookInfo, verify_signature
 from swarmdm.exceptions import (
@@ -60,10 +61,10 @@ from swarmdm.exceptions import (
     TransportError,
     ValidationError,
 )
-from swarmdm.models import InboxView, Message, TaskEnvelope
+from swarmdm.models import DMAnswer, InboxView, Message, TaskEnvelope
 
 
-__version__ = "0.20.1"
+__version__ = "0.21.0"
 
 __all__ = [
     # Top-level client
@@ -76,13 +77,17 @@ __all__ = [
     "DM",
     "FriendsAPI",
     "GroupsAPI",
+    "SafetyAPI",
     # Agent Card model (v0.2.5)
     "AgentCard",
     "AgentCapability",
     "AgentEndpoint",
     "AgentAuthentication",
     # Response models
+    "AgentProfile",
     "AgentSummary",
+    "DMAnswer",
+    "FriendRequest",
     "ConversationMessage",
     "Group",
     "GroupInvite",

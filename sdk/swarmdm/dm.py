@@ -34,7 +34,7 @@ from swarmdm.conversations_api import (
     conversation as _conversation,
     conversations as _conversations,
 )
-from swarmdm.models import InboxView, TaskEnvelope
+from swarmdm.models import DMAnswer, InboxView, TaskEnvelope
 from swarmdm.wake_context import (
     WakeContext,
     context_for_wake as _context_for_wake,
@@ -312,7 +312,10 @@ class DM:
           2. Poll ``get_task()`` every ``poll_interval_s`` seconds
              until the envelope's ``state`` becomes ``completed``
              OR the timeout elapses.
-          3. Return the final envelope. ``envelope.reply_text``
+          3. v0.21 — also stop when the answer arrives as a new DM
+             threaded on ours (``reply_dm``); those land in
+             ``envelope.replies`` and ``reply_text`` falls back to them.
+          4. Return the final envelope. ``envelope.reply_text``
              surfaces the receiver's text; ``envelope.delivered_at``
              and ``envelope.replied_at`` carry the round-trip
              timestamps (point 4 of Tyler's "real DM tool" list:
@@ -342,19 +345,107 @@ class DM:
           whether the reply landed within the timeout.
         """
         sent = self.send(target=target, text=text, vertical=vertical, tags=tags)
-        if not sent.id:
+        if not sent.id or sent.is_friend_request_pending or sent.group_id:
+            # Held in a friend request / fanned out to a group: no
+            # single task to wait on.
             return sent
         deadline = time.monotonic() + timeout_s
         envelope = sent
         while time.monotonic() < deadline:
-            envelope = self.get_task(sent.id)
-            if envelope.is_terminal:
+            # v0.21 — an answer can also come back as a NEW DM threaded
+            # on ours (reply_dm); stop on either path.
+            ans = self.answer(sent.id)
+            envelope = ans.task or envelope
+            envelope.replies = ans.replies
+            if envelope.is_terminal or ans.replies:
                 return envelope
             time.sleep(poll_interval_s)
         # Timed out — return the partial envelope. Caller can poll
         # again manually with get_task(sent.id) if they want to keep
         # waiting.
         return envelope
+
+    # ── answer collection (v0.21) ───────────────────────────────────
+
+    def answer(self, message_id: str, *, scan_limit: int = 50) -> DMAnswer:
+        """State of a DM you sent, with the recipient's answer if any.
+
+        Collects BOTH answer paths: the task's own ``history`` (the
+        recipient called ``reply`` / ``submit``) and new DMs in your
+        inbox threaded on it (``in_reply_to == message_id``, what
+        ``reply_dm`` sends). ``scan_limit`` is how many recent inbox
+        DMs are scanned for threaded replies (max 200).
+
+        Returns a :class:`DMAnswer`; ``.answer`` is untrusted text from
+        the other agent.
+        """
+        task = self.get_task(message_id)
+        to = task.recipient_bot_id or task.target_bot_id
+        bits: list[str] = []
+        history = task.raw.get("history") if isinstance(task.raw, dict) else None
+        for h in history if isinstance(history, list) else []:
+            if isinstance(h, dict) and h.get("role") == "agent":
+                for p in h.get("parts") or []:
+                    if isinstance(p, dict) and (p.get("kind") or "").lower() == "text":
+                        t = p.get("text")
+                        if isinstance(t, str) and t.strip():
+                            bits.append(t.strip())
+        if not bits:
+            for art in task.artifacts:
+                if isinstance(art, dict) and (art.get("kind") or "").lower() == "text":
+                    t = art.get("text")
+                    if isinstance(t, str) and t.strip():
+                        bits.append(t.strip())
+        # A failed inbox scan must not hide an answer already in the
+        # task's history (same per-source tolerance as ``inbox()``).
+        try:
+            r = self._http.request(
+                "GET", "/a2a/v1/messages/inbox",
+                params={"state": "all", "limit": max(1, min(int(scan_limit), 200))},
+            )
+        except Exception:
+            r = None
+        rows = r.get("tasks") if isinstance(r, dict) else None
+        replies = []
+        for row in rows or []:
+            if not isinstance(row, dict) or row.get("in_reply_to") != message_id:
+                continue
+            env = TaskEnvelope.from_dict(row)
+            if to and env.sender_bot_id not in (None, to):
+                continue
+            replies.append(env)
+        replies.reverse()  # inbox is newest first; answers read oldest first
+        for env in replies:
+            t = env.message.text if env.message else ""
+            if t:
+                bits.append(t)
+        return DMAnswer(
+            message_id=message_id,
+            to=to,
+            state=task.state,
+            answer="\n\n".join(bits) or None,
+            replies=replies,
+            task=task,
+        )
+
+    def wait_for_answer(
+        self,
+        message_id: str,
+        *,
+        timeout_s: float = 60.0,
+        poll_interval_s: float = 3.0,
+    ) -> DMAnswer:
+        """Poll :meth:`answer` until an answer arrives, the task ends
+        (failed / canceled / rejected), or ``timeout_s`` passes. Never
+        raises on timeout — check ``.has_answer``."""
+        deadline = time.monotonic() + max(0.0, timeout_s)
+        ans = self.answer(message_id)
+        while not ans.has_answer and ans.state not in ("failed", "canceled", "rejected"):
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(poll_interval_s)
+            ans = self.answer(message_id)
+        return ans
 
     # ── inbox + get_task (read) ─────────────────────────────────────
 

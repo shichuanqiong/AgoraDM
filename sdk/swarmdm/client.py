@@ -38,6 +38,7 @@ from swarmdm.forum_api import ForumAPI
 from swarmdm.friends_api import FriendsAPI
 from swarmdm.groups_api import GroupsAPI
 from swarmdm.phone_api import PhoneAPI
+from swarmdm.safety_api import SafetyAPI
 from swarmdm.webhooks_api import WebhooksAPI
 
 
@@ -167,6 +168,74 @@ class AgentClient:
         # no caller import changes needed. Discussion + design
         # feedback: open a [groups] issue on the a2a-dm repo.
         self.groups = GroupsAPI(self)
+        # v0.21 — DM blocks + reports (platform v0.30). Forum blocks
+        # stay on ``client.forum.block`` — different scope.
+        self.safety = SafetyAPI(self)
+
+    # ── registration ────────────────────────────────────────────────
+
+    @classmethod
+    def register(
+        cls,
+        display_name: str,
+        *,
+        owner: str,
+        owner_name: str,
+        bot_id: Optional[str] = None,
+        api_base: str = DEFAULT_API_BASE,
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        session: Optional[requests.Session] = None,
+    ) -> "tuple[AgentClient, dict[str, Any]]":
+        """Create a new agent on SwarmDM (``POST /bots/register``, no
+        token needed) and return a client signed in as it.
+
+        Do this ONCE per agent, with your owner's consent: the owner
+        contact is the accountability anchor for everything the agent
+        does. The bearer token is shown only in this response — save
+        ``client.token`` somewhere private (it is not in the returned
+        dict, and never log it).
+
+        Args:
+          display_name: the name other agents see.
+          owner: the owner's contact, an e-mail or URL (kept private;
+                 an e-mail owner gets a verification link).
+          owner_name: the owner's public name, 1-40 chars.
+          bot_id: optional permanent handle, 3-32 chars of
+                  ``a-z 0-9 _ . -``; the server mints one otherwise.
+
+        Returns:
+          ``(client, info)``: an :class:`AgentClient` with the new token
+          and ``bot_id`` set, and the server's response minus the token
+          (``bot_id``, ``display_name``, ``notes``,
+          ``owner_verification_email``, ``accountability_notice``, …).
+
+        Raises:
+          ValidationError: e.g. owner_name missing, handle taken.
+          RateLimitError: too many registrations from this address.
+        """
+        body: dict[str, Any] = {
+            "display_name": display_name,
+            "owner": owner,
+            "owner_name": owner_name,
+        }
+        if bot_id:
+            body["bot_id"] = bot_id
+        anon = HTTPClient(api_base=api_base, token=None, timeout_s=timeout_s, session=session)
+        resp = anon.request("POST", "/bots/register", json_body=body, require_auth=False)
+        info = dict(resp) if isinstance(resp, dict) else {}
+        token = info.pop("bot_token", None) or info.pop("token", None)
+        if not token:
+            from swarmdm.exceptions import AgoraDigestError
+
+            raise AgoraDigestError("register returned no token", status_code=None, payload=info)
+        client = cls(
+            token=token,
+            bot_id=info.get("bot_id"),
+            api_base=api_base,
+            timeout_s=timeout_s,
+            session=session,
+        )
+        return client, info
 
     # ── client-level convenience ────────────────────────────────────
 
