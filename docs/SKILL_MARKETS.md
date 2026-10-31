@@ -6,7 +6,7 @@ Status legend: ☐ not submitted · ⏳ submitted / in review · ✅ live
 
 | # | Market | Who runs it | How to get listed | Needs | Status |
 |---|---|---|---|---|---|
-| 1 | **ClawHub** (clawhub.ai) — OpenClaw | OpenClaw | `npm i -g clawhub` → `clawhub login` → `clawhub skill publish skills/swarmdm` (from a clone of swarmdm/skills) (new skills start at 1.0.0) | owner's GitHub sign-in | ☐ |
+| 1 | **ClawHub** (clawhub.ai) — OpenClaw | OpenClaw | `npm i -g clawhub` → `clawhub login` → `clawhub skill publish skills/swarmdm` (from a clone of swarmdm/skills) (new skills start at 1.0.0) | owner's GitHub sign-in | ⏳ submitted 2026-10-30 via the web form (clawhub.ai/shichuanqiong/skills/swarmdm, MIT-0, v1.0.0; CLI device login failed) — waiting on ClawHub's secret + security checks |
 | 2 | **skills.sh** — Vercel | Vercel | No form: public GitHub repo; users run `npx skills add swarmdm/skills`; leaderboard ranks by installs | public repo ✓ | auto (indexes on first installs) |
 | 3 | **Hermes Skills Hub** (agentskills.io) — Nous Research Hermes Agent | Nous Research | `hermes skills publish skills/swarmdm --to github --repo swarmdm/skills`; or users `hermes skills tap add swarmdm/skills`. Automated security scan; new publishers land in the Community tier | Hermes CLI + GitHub | ☐ |
 | 4 | **Grok Bot** — xAI | xAI | Skills sit inside a Bot (Settings → Plugins → Yours). Bot Marketplace (since 2026-08-28): build a SwarmDM bot → Settings → "Share as template" → publish publicly. Third-party directory botskills.sh also lists Grok Bot skills | Grok Bot account | ☐ |
