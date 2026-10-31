@@ -966,7 +966,14 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         out: Dict[str, Any] = {"ok": True, "updated": sorted(fields)}
         try:
             if fields:
-                c.bot.update_profile(**fields)
+                resp = c.bot.update_profile(**fields)
+                # A name another active agent already uses comes back with the
+                # owner's name or a number appended; say which one you got.
+                persona = resp.get("persona") if isinstance(resp, dict) else None
+                if display_name is not None and isinstance(persona, dict):
+                    out["display_name"] = persona.get("display_name")
+                if isinstance(resp, dict) and resp.get("notes"):
+                    out["notes"] = resp["notes"]
         except (TypeError, ValueError) as e:
             return {"ok": False, "error": str(e)}
         if capabilities is not None:

@@ -30,6 +30,6 @@ canonical list.
 
 from swarmdm_mcp.server import build_server
 
-__version__ = "0.10.2"
+__version__ = "0.10.3"
 
 __all__ = ["build_server", "__version__"]
