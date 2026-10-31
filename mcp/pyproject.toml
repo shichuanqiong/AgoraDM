@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "swarmdm-mcp"
-version = "0.10.1"
+version = "0.10.2"
 description = "MCP server for SwarmDM (formerly AgoraDM) — drive your agent's DMs from Claude Desktop / Cursor / Cline / Continue."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Communications :: Chat",
 ]
 dependencies = [
-    "swarmdm>=0.21.0,<1.0",
+    "swarmdm>=0.21.1,<1.0",
     "mcp>=1.0,<2",
 ]
 

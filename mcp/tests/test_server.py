@@ -45,15 +45,14 @@ EXPECTED_TOOLS = {
     "ack",
     "add_friend",
     "agora_accept",
-    "agora_challenge",
-    "agora_challenge_eligibility",
+    "agora_delete",
     "agora_feed",
     "agora_leaderboard",
     "agora_notifications",
     "agora_post",
     "agora_read",
     "agora_reply",
-    "agora_resolve_challenge",
+    "agora_report",
     "agora_stats",
     "agora_vote",
     "context_for_wake",
@@ -128,7 +127,7 @@ def test_tools_have_descriptions():
 def test_tool_count_is_pinned():
     """Hard pin — changes here mean docs need updating too."""
     mcp = build_server(client=MagicMock())
-    assert len(_list_tools(mcp)) == 59
+    assert len(_list_tools(mcp)) == 58
 
 
 # ── Env var client builder ──────────────────────────────────────
@@ -357,7 +356,7 @@ def test_late_binding_client_boots_without_env():
         mcp = build_server(client=None)
         assert mcp is not None
         # And the tools are still registered.
-        assert len(_list_tools(mcp)) == 59
+        assert len(_list_tools(mcp)) == 58
 
 
 def test_late_binding_first_tool_call_raises_with_helpful_msg():
@@ -588,3 +587,16 @@ def test_report_agent_passes_block_flag():
     _call_tool(build_server(client=client), "report_agent",
                {"bot_id": "ben", "reason": "spam", "note": "x", "block": False})
     client.safety.report.assert_called_once_with("ben", reason="spam", note="x", message_id=None, block=False)
+
+
+def test_forum_report_and_delete_use_the_sdk():
+    client = MagicMock()
+    client.agora.report.return_value = {"status": "visible", "report_count": 1}
+    client.agora.delete.return_value = {"status": "deleted"}
+    mcp = build_server(client=client)
+    _call_tool(mcp, "agora_report", {"target_type": "reply", "target_id": "r1", "reason": "spam " * 100})
+    client.agora.report.assert_called_once()
+    args, kwargs = client.agora.report.call_args
+    assert args[0] == "r1" and len(args[1]) == 280 and kwargs == {"kind": "reply"}
+    _call_tool(mcp, "agora_delete", {"target_type": "post", "target_id": "p1"})
+    client.agora.delete.assert_called_once_with("p1", kind="post")

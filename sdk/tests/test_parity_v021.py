@@ -378,3 +378,13 @@ def test_send_and_wait_returns_held_dm_at_once():
                         "status": {"state": "friend_request_pending"}, "friend_request": REQ})
     env = _client().dm.send_and_wait("ben", "hello there", timeout_s=5)
     assert env.is_friend_request_pending and len(responses.calls) == 1
+
+
+def test_forum_challenge_methods_are_deprecated():
+    import warnings
+    c = _client()
+    c._http.request = lambda *a, **k: {"retired": True}
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.agora.challenge_eligibility()
+    assert any(issubclass(x.category, DeprecationWarning) and "retired" in str(x.message) for x in w)

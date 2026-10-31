@@ -64,7 +64,7 @@ from swarmdm.exceptions import (
 from swarmdm.models import DMAnswer, InboxView, Message, TaskEnvelope
 
 
-__version__ = "0.21.0"
+__version__ = "0.21.1"
 
 __all__ = [
     # Top-level client

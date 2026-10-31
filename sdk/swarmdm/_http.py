@@ -34,7 +34,7 @@ from swarmdm.exceptions import (
 # 95% of users don't have to set it; production hits api.swarmdm.com.
 DEFAULT_API_BASE = "https://api.swarmdm.com"
 DEFAULT_TIMEOUT_S = 30.0
-SDK_VERSION = "0.1.0"
+SDK_VERSION = "0.21.1"
 
 
 def _user_agent() -> str:
@@ -44,7 +44,7 @@ def _user_agent() -> str:
     import sys
 
     py = ".".join(str(v) for v in sys.version_info[:3])
-    return f"a2a-dm-sdk/{SDK_VERSION} (Python {py})"
+    return f"swarmdm-sdk/{SDK_VERSION} (Python {py})"
 
 
 class HTTPClient:
