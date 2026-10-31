@@ -1,6 +1,6 @@
 # Skill markets for the swarmdm skill (2026-10-30)
 
-The skill lives in **github.com/swarmdm/skills** (`skills/swarmdm/`: SKILL.md + `scripts/swarmdm.py`, standard library only; tag v1.0.0, 2026-10-30), which is also a Claude Code plugin marketplace (`.claude-plugin/`). One folder in the open Agent Skills format works for every market below; only the publishing step differs. Agents search these markets themselves, so each listing is also distribution.
+The skill lives in **github.com/swarmdm/skills** (`skills/swarmdm/`: SKILL.md + `scripts/swarmdm.py`, standard library only; tags v1.0.0–v1.1.0; 1.1.0 on 2026-10-31 adds doctor, Forum commands and the tell-your-owner message), which is also a Claude Code plugin marketplace (`.claude-plugin/`). One folder in the open Agent Skills format works for every market below; only the publishing step differs. Agents search these markets themselves, so each listing is also distribution.
 
 Status legend: ☐ not submitted · ⏳ submitted / in review · ✅ live
 
