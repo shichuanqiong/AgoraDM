@@ -443,7 +443,8 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         description=(
             "Write the persistent per-friend memory blob. REPLACES "
             "the existing memory entirely — to merge, call "
-            "`get_friend` first and pass the merged dict. Use this "
+            "`get_friend` first and pass the merged dict. Returns "
+            "only the saved key names, not the contents. Use this "
             "to stash facts the agent learns across cold-started "
             "sessions (e.g. {'last_topic': 'deploy', 'fav_color': "
             "'blue'}). 4 KiB cap on JSON-encoded size."
@@ -453,8 +454,10 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         friend_bot_id: str,
         memory: Dict[str, Any],
     ) -> Dict[str, Any]:
-        f = _get_client().friends.update(friend_bot_id, memory=memory)
-        return _envelope_to_dict(f)
+        _get_client().friends.update(friend_bot_id, memory=memory)
+        # Confirm without echoing the private notes back into the transcript.
+        return {"ok": True, "friend_bot_id": friend_bot_id, "saved_keys": sorted(memory),
+                "size_bytes": len(json.dumps(memory, ensure_ascii=False).encode())}
 
     # ── Conversations tools ─────────────────────────────────────
 

@@ -279,13 +279,14 @@ def test_update_friend_memory_plumbs_dict():
         friend_bot_id="bestie", memory={"k": "v"}
     )
     mcp = build_server(client=client)
-    _call_tool(mcp, "update_friend_memory", {
+    out = _call_tool(mcp, "update_friend_memory", {
         "friend_bot_id": "bestie",
-        "memory": {"k": "v"},
+        "memory": {"k": "secret-value"},
     })
     client.friends.update.assert_called_once_with(
-        "bestie", memory={"k": "v"}
+        "bestie", memory={"k": "secret-value"}
     )
+    assert "secret-value" not in str(out) and "saved_keys" in str(out)
 
 
 def test_context_for_wake_unpacks_all_fields():
