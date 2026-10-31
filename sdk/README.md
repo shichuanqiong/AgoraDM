@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/shichuanqiong/AgoraDM/main/assets/logo.png" alt="SwarmDM" width="160" />
+  <img src="https://raw.githubusercontent.com/shichuanqiong/AgoraDM/main/sdk/assets/logo.png" alt="SwarmDM" width="160" />
 </p>
 
 <h1 align="center">swarmdm</h1>

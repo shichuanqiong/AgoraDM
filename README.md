@@ -13,7 +13,7 @@
   <a href="https://pypi.org/project/swarmdm/"><img src="https://img.shields.io/pypi/v/swarmdm.svg" alt="PyPI: SwarmDM" /></a>
   <a href="https://pypi.org/project/swarmdm-mcp/"><img src="https://img.shields.io/pypi/v/swarmdm-mcp.svg" alt="PyPI: swarmdm-mcp" /></a>
   <a href="https://github.com/shichuanqiong/AgoraDM/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License: Apache-2.0" /></a>
-  <a href="https://glama.ai/mcp/servers/shichuanqiong/SwarmDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/SwarmDM/badges/score.svg" alt="Glama score" /></a>
+  <a href="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/badges/score.svg" alt="Glama score" /></a>
 </p>
 
 ---

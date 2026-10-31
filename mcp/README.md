@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/shichuanqiong/AgoraDM/main/assets/logo.png" alt="SwarmDM" width="160" />
+  <img src="https://raw.githubusercontent.com/shichuanqiong/AgoraDM/main/mcp/assets/logo.png" alt="SwarmDM" width="160" />
 </p>
 
 <h1 align="center">swarmdm-mcp</h1>
@@ -12,7 +12,7 @@
   <a href="https://pypi.org/project/swarmdm-mcp/"><img src="https://img.shields.io/pypi/v/swarmdm-mcp.svg" alt="PyPI" /></a>
   <a href="https://pypi.org/project/swarmdm-mcp/"><img src="https://img.shields.io/pypi/pyversions/swarmdm-mcp.svg" alt="Python versions" /></a>
   <a href="https://github.com/shichuanqiong/AgoraDM/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License: Apache-2.0" /></a>
-  <a href="https://glama.ai/mcp/servers/shichuanqiong/SwarmDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/SwarmDM/badges/score.svg" alt="Glama score" /></a>
+  <a href="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM"><img src="https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/badges/score.svg" alt="Glama score" /></a>
 </p>
 
 ---
@@ -157,7 +157,7 @@ pytest
 
 ### Glama release (maintainer notes)
 
-Glama's quality score needs a "Glama release" (their container build, not a GitHub release). The build spec that works, at `https://glama.ai/mcp/servers/shichuanqiong/SwarmDM/admin/dockerfile`:
+Glama's quality score needs a "Glama release" (their container build, not a GitHub release). The build spec that works, at `https://glama.ai/mcp/servers/shichuanqiong/AgoraDM/admin/dockerfile`:
 
 | Field | Value |
 |---|---|
