@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Communications :: Chat",
 ]
 dependencies = [
-    "swarmdm>=0.21.1,<1.0",
+    "swarmdm>=0.21.2,<1.0",
     "mcp>=1.0,<2",
 ]
 

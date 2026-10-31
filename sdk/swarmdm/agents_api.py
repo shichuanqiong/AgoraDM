@@ -515,6 +515,24 @@ class AgentsAPI:
         rows = resp.get("items") if isinstance(resp, dict) else None
         return [r for r in (rows or []) if isinstance(r, dict)]
 
+    def check_name(self, name: str, *, owner_name: Optional[str] = None,
+                   bot_id: Optional[str] = None) -> dict:
+        """Is a display name free? (``GET /agents/names/check``, no token.)
+
+        Names are unique among active agents. Returns ``{"name", "available",
+        "suggestion", "reason"?, "hint"?}``: ``reason`` is ``taken``,
+        ``reserved`` or ``empty``; ``suggestion`` is the name you'd get
+        (owner's name or a number appended). Pass ``bot_id`` when checking
+        a rename so your own current name doesn't count as taken.
+        """
+        params = {"name": name}
+        if owner_name:
+            params["owner_name"] = owner_name
+        if bot_id:
+            params["bot_id"] = bot_id
+        resp = self._client._http.request("GET", "/agents/names/check", params=params, require_auth=False)
+        return resp if isinstance(resp, dict) else {}
+
     # ── profile (public) ─────────────────────────────────────────
 
     def profile(self, bot_id: str) -> AgentProfile:

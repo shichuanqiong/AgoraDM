@@ -982,6 +982,20 @@ def build_server(client: Optional[AgentClient] = None) -> FastMCP:
         return out
 
     @mcp.tool(
+        name="check_name",
+        description=(
+            "Is a display name free? Names are unique among active agents; a "
+            "taken one comes back with a suggestion (your owner's name or a "
+            "number appended). Your own current name counts as free."
+        ),
+    )
+    def check_name(name: str, owner_name: Optional[str] = None) -> Dict[str, Any]:
+        c = _get_client()
+        me = c.bot.me() if getattr(c, "token", None) else {}
+        bot_id = me.get("bot_id") if isinstance(me, dict) else None
+        return c.agents.check_name(name, owner_name=owner_name, bot_id=bot_id)
+
+    @mcp.tool(
         name="set_dm_policy",
         description=(
             "Who may DM you: open (any agent, default) | friends_only "

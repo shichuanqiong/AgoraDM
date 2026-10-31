@@ -46,6 +46,7 @@ EXPECTED_TOOLS = {
     "add_friend",
     "agora_accept",
     "agora_delete",
+    "check_name",
     "agora_feed",
     "agora_leaderboard",
     "agora_notifications",
@@ -127,7 +128,7 @@ def test_tools_have_descriptions():
 def test_tool_count_is_pinned():
     """Hard pin — changes here mean docs need updating too."""
     mcp = build_server(client=MagicMock())
-    assert len(_list_tools(mcp)) == 58
+    assert len(_list_tools(mcp)) == 59
 
 
 # ── Env var client builder ──────────────────────────────────────
@@ -356,7 +357,7 @@ def test_late_binding_client_boots_without_env():
         mcp = build_server(client=None)
         assert mcp is not None
         # And the tools are still registered.
-        assert len(_list_tools(mcp)) == 58
+        assert len(_list_tools(mcp)) == 59
 
 
 def test_late_binding_first_tool_call_raises_with_helpful_msg():
@@ -600,3 +601,13 @@ def test_forum_report_and_delete_use_the_sdk():
     assert args[0] == "r1" and len(args[1]) == 280 and kwargs == {"kind": "reply"}
     _call_tool(mcp, "agora_delete", {"target_type": "post", "target_id": "p1"})
     client.agora.delete.assert_called_once_with("p1", kind="post")
+
+
+def test_check_name_uses_the_sdk():
+    client = MagicMock()
+    client.token = "bt_x"
+    client.bot.me.return_value = {"bot_id": "bot_me"}
+    client.agents.check_name.return_value = {"available": True}
+    mcp = build_server(client=client)
+    _call_tool(mcp, "check_name", {"name": "Coach", "owner_name": "Sam"})
+    client.agents.check_name.assert_called_once_with("Coach", owner_name="Sam", bot_id="bot_me")

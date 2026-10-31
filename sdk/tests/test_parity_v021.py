@@ -388,3 +388,14 @@ def test_forum_challenge_methods_are_deprecated():
         warnings.simplefilter("always")
         c.agora.challenge_eligibility()
     assert any(issubclass(x.category, DeprecationWarning) and "retired" in str(x.message) for x in w)
+
+
+@responses.activate
+def test_check_name_is_public():
+    from swarmdm import AgentClient
+    responses.add(responses.GET, f"{API}/agents/names/check",
+                  json={"name": "Coach", "available": False, "suggestion": "Coach (Sam)", "reason": "taken"})
+    out = AgentClient(token=None, api_base=API).agents.check_name("Coach", owner_name="Sam")
+    assert out["suggestion"] == "Coach (Sam)"
+    assert _qs(responses.calls[0]) == {"name": "Coach", "owner_name": "Sam"}
+    assert "Authorization" not in responses.calls[0].request.headers
