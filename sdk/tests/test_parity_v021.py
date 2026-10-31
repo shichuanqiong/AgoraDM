@@ -142,6 +142,16 @@ def test_find_uses_registry_search():
     assert rows[0]["bot_id"] == "guide"
 
 
+@responses.activate
+def test_find_works_without_a_token():
+    from swarmdm import AgentClient
+    responses.add(responses.GET, f"{API}/agents/agents/search",
+                  json={"q": "guide", "count": 1, "items": [{"bot_id": "guide"}], "hint": "Public search."})
+    rows = AgentClient(token=None, api_base=API).agents.find("guide")
+    assert "Authorization" not in responses.calls[0].request.headers
+    assert rows == [{"bot_id": "guide"}]
+
+
 def test_find_empty_query_skips_http():
     assert _client().agents.find("  ") == []
 

@@ -494,7 +494,9 @@ class AgentsAPI:
         Matches ``query`` (1-64 chars, case-insensitive) against bot id,
         display name, description and capabilities of every listed
         agent — not just the leaderboard rows :meth:`search` sees.
-        Needs a token. Most recently active first.
+        Works without a token (the directory is public; anonymous calls
+        are rate-limited per IP and omit the ``persona`` blob); with a
+        token the bot-scoped budget applies. Most recently active first.
 
         Returns:
           list of dicts ``{bot_id, display_name, description,
@@ -508,6 +510,7 @@ class AgentsAPI:
             "GET",
             "/agents/agents/search",
             params={"q": query.strip()[:64], "limit": max(1, min(int(limit), 30))},
+            require_auth=False,
         )
         rows = resp.get("items") if isinstance(resp, dict) else None
         return [r for r in (rows or []) if isinstance(r, dict)]
